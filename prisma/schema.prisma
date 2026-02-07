@@ -1,0 +1,63 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Partner {
+  id         Int       @id @default(autoincrement())
+  externalId String    @unique
+  login      String
+  pwd        String
+  abonents   Abonent[]
+}
+
+model Abonent {
+  id            Int      @id @default(autoincrement())
+  externalId    String   @unique
+  login         String
+  pwd           String
+  package       Package?
+  note          String
+  partner       Partner  @relation(fields: [partnerId], references: [id])
+  partnerId     Int
+  playlist      String
+  epg           String
+  archive       String
+  stalkerPortal String
+}
+
+model Package {
+  id             Int             @id @default(autoincrement())
+  pkgType        PackageType
+  startDate      DateTime
+  endDate        DateTime
+  abonent        Abonent         @relation(fields: [abonentId], references: [id])
+  abonentId      Int             @unique
+  paymentDetails PaymentDetails?
+}
+
+model PaymentDetails {
+  id            Int      @id @default(autoincrement())
+  paymentDate   DateTime
+  paymentAmount Int
+  paymentCurr   Currency
+  package       Package  @relation(fields: [packageId], references: [id])
+  packageId     Int      @unique
+}
+
+enum Currency {
+  USD
+  EUR
+}
+
+enum PackageType {
+  REGULAR
+  PREMIUM
+}
