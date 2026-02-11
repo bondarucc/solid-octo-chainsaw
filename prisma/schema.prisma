@@ -2,7 +2,7 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
   output   = "../generated/prisma"
 }
 
@@ -10,27 +10,31 @@ datasource db {
   provider = "sqlite"
 }
 
-model Partner {
-  id         Int       @id @default(autoincrement())
-  externalId String    @unique
-  login      String
-  pwd        String
-  abonents   Abonent[]
+model User {
+  id    String @id @default(uuid())
+  login String
+  pwd   String
+  role  Role
+  sub   Sub?   @relation("UserSelfSub")
 }
 
-model Abonent {
-  id            Int      @id @default(autoincrement())
-  externalId    String   @unique
-  login         String
-  pwd           String
-  package       Package?
-  note          String
-  partner       Partner  @relation(fields: [partnerId], references: [id])
-  partnerId     Int
-  playlist      String
-  epg           String
-  archive       String
-  stalkerPortal String
+model Sub {
+  id                  String   @id @default(uuid())
+  externalId          String   @unique
+  login               String   @unique
+  pwd                 String
+  package             Package?
+  note                String
+  user                User?    @relation("UserSelfSub", fields: [userId], references: [id])
+  userId              String?  @unique
+  attractedSubs       Sub[]    @relation("SubOnSub")
+  attractedBy         Sub?     @relation("SubOnSub", fields: [attractorId], references: [id])
+  attractorId         String?
+  secondarySubsAmount Int      @default(0)
+  playlist            String
+  epg                 String
+  archive             String
+  stalkerPortal       String
 }
 
 model Package {
@@ -38,8 +42,8 @@ model Package {
   pkgType        PackageType
   startDate      DateTime
   endDate        DateTime
-  abonent        Abonent         @relation(fields: [abonentId], references: [id])
-  abonentId      Int             @unique
+  sub            Sub             @relation(fields: [subId], references: [id])
+  subId          String          @unique
   paymentDetails PaymentDetails?
 }
 
@@ -60,4 +64,9 @@ enum Currency {
 enum PackageType {
   REGULAR
   PREMIUM
+}
+
+enum Role {
+  ADMIN
+  PARTNER
 }
