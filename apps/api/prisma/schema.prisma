@@ -1,0 +1,76 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id    String @id @default(uuid())
+  login String
+  pwd   String
+  role  Role
+  sub   Sub    @relation(fields: [subId], references: [id])
+  subId String @unique
+}
+
+model Sub {
+  id                  String   @id @default(uuid())
+  externalId          String   @unique
+  login               String?   @unique
+  pwd                 String?
+  package             Package?
+  note                String?
+  user                User?
+  attractedSubs       Sub[]    @relation("SubOnSub")
+  attractedBy         Sub?     @relation("SubOnSub", fields: [attractorId], references: [id])
+  attractorId         String?
+  secondarySubsAmount Int      @default(0)
+  playlist            String?
+  epg                 String?
+  archive             String?
+  stalkerPortal       String?
+  totalPayableReward  Int      @default(0)
+}
+
+model Package {
+  id            String      @id @default(uuid())
+  pkgType       PackageType?
+  startDate     DateTime
+  endDate       DateTime
+  sub           Sub         @relation(fields: [subId], references: [id])
+  subId         String      @unique
+  // paymentDetails   PaymentDetails @relation(fields: [paymentDetailsId], references: [id])
+  // paymentDetailsId String         @unique
+  paymentDate   DateTime?
+  paymentAmount Int?
+  paymentCurr   Currency?
+}
+
+// model PaymentDetails {
+//   id            String   @id @default(uuid())
+//   paymentDate   DateTime
+//   paymentAmount Int
+//   paymentCurr   Currency
+//   package       Package?
+// }
+
+enum Currency {
+  USD
+  EUR
+}
+
+enum PackageType {
+  REGULAR
+  PREMIUM
+}
+
+enum Role {
+  ADMIN
+  PARTNER
+}
