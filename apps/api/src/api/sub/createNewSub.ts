@@ -27,6 +27,11 @@ export default async function createNewSub(sub: CreateSubRequestBody, localPrism
           pwd: hashSync(user.pwd, 10)
         }
       },
+      sc_ae: {
+        create: {
+          timestamp: new Date(),
+        }
+      },
       ...(attractorId
         ? {
           attractedBy: {
@@ -46,12 +51,13 @@ export default async function createNewSub(sub: CreateSubRequestBody, localPrism
           attractedSubs: true,
           package: true
         }
-      }
+      },
+      sc_ae: true
 
     }
 
   })
 
-  if (newSub.attractedBy) await processAttractors(newSub.attractedBy, client)
+  if (newSub.attractedBy) await processAttractors(newSub.attractedBy, newSub.sc_ae!, client)
   return newSub
 }

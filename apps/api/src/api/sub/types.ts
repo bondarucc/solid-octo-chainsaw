@@ -1,5 +1,5 @@
-import { type User, type Package, type Sub } from "../../../generated/prisma/client.ts";
-import { PackageCreateInput } from "../../../generated/prisma/models.ts";
+import { type User, type Package, type Sub, SC_AE } from "../../../generated/prisma/client.ts";
+import { PackageCreateInput, SC_AEGetPayload, SPE_AEGetPayload, SRT_AEGetPayload, SSSAI_AEGetPayload } from "../../../generated/prisma/models.ts";
 import { SubCreateInput, type SubDefaultArgs, type SubGetPayload } from "../../../generated/prisma/models/Sub.ts";
 
 export type CreateSubRequestBody = ExcludeNull<Omit<
@@ -53,9 +53,17 @@ export const GET_SUBS_ARGS = {
 
 export type GetSubsListResponseBody = SubGetPayload<typeof GET_SUBS_ARGS>[]
 
-
-
-
-
-
 export type GetAssignableSubsResponseBody = SubGetPayload<{}>[]
+
+// export type GetSubAuditEventsResponseBody = {
+//   sc: SC_AE
+//   spe: SPE_AEGetPayload<{ include: { sc_ae: { include: { sub: true } } } }>[]
+//   srt: SRT_AEGetPayload<{ include: { sc_ae: { include: { sub: true } } } }>[]
+//   sssai_ae: SSSAI_AEGetPayload<{ include: { sc_ae: { include: { sub: { include: { attractedBy: true } } } } } }>[]
+// }
+
+export type GetSubAuditEventsResponseBody = (
+  | { type: "SC" } & SC_AE
+  | { type: "SPE" } & SPE_AEGetPayload<{ include: { sc_ae: { include: { sub: true } } } }>
+  | { type: "SRT" } & SRT_AEGetPayload<{ include: { sc_ae: { include: { sub: true } } } }>
+  | { type: "SSSAI" } & SSSAI_AEGetPayload<{ include: { sc_ae: { include: { sub: { include: { attractedBy: true } } } } } }>)[]

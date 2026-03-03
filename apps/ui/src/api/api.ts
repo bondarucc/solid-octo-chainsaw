@@ -1,5 +1,5 @@
 import type { CreateUserRequestBody, CreateUserResponseBody, GetUsersListResponseBody } from "../../../api/src/api/user/types.ts"
-import type { CreateSubRequestBody, CreateSubResponseBody, GetAssignableSubsResponseBody, GetSubsListResponseBody } from "../../../api/src/api/sub/types.ts"
+import type { CreateSubRequestBody, CreateSubResponseBody, GetAssignableSubsResponseBody, GetSubAuditEventsResponseBody, GetSubsListResponseBody } from "../../../api/src/api/sub/types.ts"
 import type { Filters } from "../components/SubsTable/FilteringPanel.tsx"
 
 async function fetchWrapper(...args: Parameters<typeof fetch>) {
@@ -47,6 +47,13 @@ export async function createUser(body: CreateUserRequestBody): Promise<CreateUse
 export async function createSub(body: CreateSubRequestBody): Promise<CreateSubResponseBody> {
   const response: CreateSubResponseBody
    = await fetchWrapper("/api/sec/subs", {method: "POST", body: JSON.stringify(body), headers: [["Content-Type", "application/json"]]})
+
+  return response
+}
+
+export async function getSubAuditEvents(id: string): Promise<GetSubAuditEventsResponseBody> {
+  const response: GetSubAuditEventsResponseBody
+    = await fetchWrapper(`/api/sec/subs/${id}/audit`)
 
   return response
 }

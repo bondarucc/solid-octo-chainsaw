@@ -1,20 +1,17 @@
 import dayjs from "dayjs";
-import { type Sub } from "../../../generated/prisma/client.ts";
+import { SC_AE, type Sub } from "../../../generated/prisma/client.ts";
 import { type SubGetPayload } from "../../../generated/prisma/models.ts";
 import { type PrismaTrnClient } from "../types.ts";
 
-export default async function processAttractors(directAttractor: SubGetPayload<{include: {attractedSubs: true, package: true}}>, localPrisma: PrismaTrnClient): Promise<void> {
+export default async function processAttractors(directAttractor: SubGetPayload<{include: {attractedSubs: true, package: true}}>, sc_ae: SC_AE, localPrisma: PrismaTrnClient): Promise<void> {
+  const tier = directAttractor.secondarySubsAmount + directAttractor.attractedSubs.length
 
-  async function processDirectAttractor(directAttractor: SubGetPayload<{include: {attractedSubs: true, package: true}}>) {
-    const tier = directAttractor.secondarySubsAmount + directAttractor.attractedSubs.length
-    
+  async function processDirectAttractor() { 
     if (tier <= 10) {
-      await do6MonthExtension(directAttractor)
+      await do6MonthExtension()
     } else if (tier <= 50) {
-      await doReward(directAttractor)
+      await doReward()
     }
-  
-  
   }
 
   async function processAttractorsTreeRecursively(attractor: Sub) {
@@ -29,42 +26,105 @@ export default async function processAttractors(directAttractor: SubGetPayload<{
         }
       }
     })
-    await processAttractorsTreeRecursively(updatedAttractor)
-  }
-
-  async function doReward(attractor: Sub): Promise<Sub> {
-    return await localPrisma.sub.update({
-      where: {
-        id: attractor.id
-      },
+    await localPrisma.sSSAI_AE.create({
       data: {
-        totalPayableReward: {
-          increment: 50,
-        }
-      }
-    })
-  
-  }
-  
-  async function do6MonthExtension(attractor: SubGetPayload<{include: {package: true}}>): Promise<void> {
-    attractor.package && await localPrisma.sub.update({
-      where: {
-        id: attractor.id
-      },
-      data: {
-        package: {
-          update: {
-            endDate: dayjs(attractor.package.endDate).add(6, "M").toDate()
+        sc_ae: {
+          connect: {
+            id: sc_ae.id
+          }
+        },
+        timestamp: new Date(),
+        prevSecondarySubsAmount: updatedAttractor.secondarySubsAmount - 1,
+        newSecondarySubsAmount: updatedAttractor.secondarySubsAmount,
+        sub: {
+          connect: {
+            id: updatedAttractor.id
           }
         }
       }
     })
+    await processAttractorsTreeRecursively(updatedAttractor)
   }
 
-  await processDirectAttractor(directAttractor)
-  await processAttractorsTreeRecursively(directAttractor)
+  async function doReward(): Promise<void> {
+    const rewardAmount = 50
 
+    const result = await localPrisma.sub.update({
+      where: {
+        id: directAttractor.id
+      },
+      data: {
+        totalPayableReward: {
+          increment: rewardAmount,
+        }
+      }
+    })
+
+    await localPrisma.sRT_AE.create({
+      data: {
+        directSubsAmount: directAttractor.attractedSubs.length,
+        newTotalPayableReward: result.totalPayableReward,
+        prevTotalPayableReward: directAttractor.totalPayableReward,
+        rewardAmount,
+        secondarySubsAmount: directAttractor.secondarySubsAmount,
+        timestamp: new Date(),
+        totalTier: tier,
+        sc_ae: {
+          connect: {
+            id: sc_ae.id
+          }
+        },
+        sub: {
+          connect: {
+            id: directAttractor.id
+          }
+        }
+      }
+    })
   
+  }
+  
+  async function do6MonthExtension(): Promise<void> {
+    if (directAttractor.package) {
+      const newEndDate = dayjs(directAttractor.package.endDate).add(6, "M").toDate()
+      await localPrisma.sub.update({
+        where: {
+          id: directAttractor.id
+        },
+        data: {
+          package: {
+            update: {
+              endDate: newEndDate
+            }
+          }
+        }
+      })
+      await localPrisma.sPE_AE.create({
+        data: {
+          directSubsAmount: directAttractor.attractedSubs.length,
+          newEndDate: newEndDate,
+          prevEndDate: directAttractor.package.endDate,
+          secondarySubsAmount: directAttractor.secondarySubsAmount,
+          timestamp: new Date(),
+          totalTier: tier,
+          package: {
+            connect: {
+              id: directAttractor.package.id
+            }
+          },
+          sc_ae: {
+            connect: {
+              id: sc_ae.id
+            }
+          }
+        }
+      })
+
+    }
+  }
+
+  await processDirectAttractor()
+  await processAttractorsTreeRecursively(directAttractor)
 }
 
 

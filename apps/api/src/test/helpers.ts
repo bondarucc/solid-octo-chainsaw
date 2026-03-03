@@ -27,31 +27,31 @@ import { CreateSubRequestBody } from "../api/sub/types.ts";
 //   const sub7 = (await generator.next(sub3.id)).value
 // }
 
-export function generateMockedSubRequest(replacements?: Partial<Sub>): CreateSubRequestBody {
-  return {
-    archive: replacements?.archive || "archive",
-    epg: replacements?.epg || "epg",
-    playlist: replacements?.playlist || "playlist",
-    stalkerPortal: replacements?.stalkerPortal || "stalkerPortal",
-    note: replacements?.note || "note",
-    pwd: hashSync(replacements?.pwd || "pwd", 10),
-    attractorId: replacements?.attractorId || null,
-    externalId: replacements?.externalId || generateRandomString(),
-    login: replacements?.login || generateRandomString(),
-    userId: replacements?.userId || null,
-    package: {
-      pkgType: "PREMIUM",
-      endDate: "2020-01-01",
-      startDate: "2020-01-01",
-      paymentDetails: {
-        paymentAmount: 1060,
-        paymentCurr: "EUR",
-        paymentDate: "2024-02-02"
-      }
-    }
-  }
+// export function generateMockedSubRequest(replacements?: Partial<Sub>): CreateSubRequestBody {
+//   return {
+//     archive: replacements?.archive || "archive",
+//     epg: replacements?.epg || "epg",
+//     playlist: replacements?.playlist || "playlist",
+//     stalkerPortal: replacements?.stalkerPortal || "stalkerPortal",
+//     note: replacements?.note || "note",
+//     pwd: hashSync(replacements?.pwd || "pwd", 10),
+//     attractorId: replacements?.attractorId || null,
+//     externalId: replacements?.externalId || generateRandomString(),
+//     login: replacements?.login || generateRandomString(),
+//     userId: replacements?.userId || null,
+//     package: {
+//       pkgType: "PREMIUM",
+//       endDate: "2020-01-01",
+//       startDate: "2020-01-01",
+//       paymentDetails: {
+//         paymentAmount: 1060,
+//         paymentCurr: "EUR",
+//         paymentDate: "2024-02-02"
+//       }
+//     }
+//   }
 
-}
+// }
 
 // // export async function* generateDummySub(): AsyncGenerator<Sub, never, string> {
 // //   const dummySub = {

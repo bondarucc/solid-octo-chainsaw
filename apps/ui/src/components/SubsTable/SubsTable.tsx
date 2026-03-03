@@ -1,12 +1,14 @@
-import { Button, Table, type TableColumnProps, type TableProps } from "antd"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { Button, Dropdown, Table, type MenuProps, type TableColumnProps, type TableProps } from "antd"
+import { Fragment, useCallback, useEffect, useMemo, useState, type MouseEventHandler, type PropsWithChildren } from "react"
 import type { Package, Sub, User } from "../../../../api/generated/prisma/browser.ts"
 import type { GetSubsListResponseBody } from "../../../../api/src/api/sub/types.ts"
 import { getFullSubsList } from "../../api/api.ts"
 import useSubsTableContext from "./hooks/useSubsTableContext.ts"
 import SubsManagementPanel from "./SubsManagementPanel.tsx"
-import { DoubleRightOutlined } from "@ant-design/icons"
+import { DoubleRightOutlined, MoreOutlined } from "@ant-design/icons"
 import type { ContextShape } from "./ContextProvider.tsx"
+import { ClickGuard } from "../../helpers/ClickGuard.tsx"
+import { AuditModalContent } from "./AuditModalContent.tsx"
 
 
 
@@ -14,7 +16,7 @@ export default function SubsTable() {
   const [allSubs, setAllSubs] = useState<GetSubsListResponseBody>([])
   const { filters } = useSubsTableContext()
   // console.log(filters);
-  
+
   const getAllSubs = useCallback(async () => {
     const response = await getFullSubsList(filters)
     setAllSubs(response)
@@ -50,7 +52,7 @@ function generateColumns(expandable: boolean, setFilters: ContextShape["setFilte
       key: "dig",
       render(sub: InnerTableItem) {
         return (
-          <Button onClick={() => setFilters({externalId: sub.externalId})} icon={<DoubleRightOutlined />}/>
+          <Button onClick={() => setFilters({ externalId: sub.externalId })} icon={<DoubleRightOutlined />} />
         )
       },
     },
@@ -81,9 +83,49 @@ function generateColumns(expandable: boolean, setFilters: ContextShape["setFilte
       dataIndex: "pwd",
       key: "pwd"
     },
+    {
+      key: "actions",
+      render: (sub: InnerTableItem) => {
+        return <ActionsDropdown sub={sub} />
+      },
+      fixed: "end",
+    }
 
   ].filter(Boolean)
 }
+
+function ActionsDropdown({ sub }: { sub: InnerTableItem }) {
+  const {setModalConfig} = useSubsTableContext()
+
+  
+  const items = useMemo<MenuProps["items"]>(() => {
+    return [
+      {
+        key: 1,
+        label: "Аудит",
+        onClick: () => {
+          setModalConfig({
+            open: true,
+            title: "Audit",
+            children: <AuditModalContent {...sub} />
+          })
+        }
+      }
+    ]
+  }, [sub])
+
+  return (
+    <ClickGuard>
+      <Dropdown menu={{ items }} trigger={["click"]}>
+        <MoreOutlined />
+      </Dropdown>
+    </ClickGuard>
+
+  )
+
+}
+
+
 
 type SubWithUserAndPkg = Sub & {
   package: Package | null,
@@ -102,7 +144,7 @@ type InnerTableProps = {
 function InnerTable({ subsList, expandable }: InnerTableProps) {
   const [expandedRows, setExpandedRows] = useState<NonNullable<TableProps["expandable"]>["expandedRowKeys"]>()
 
-  const {setFilters} = useSubsTableContext()
+  const { setFilters } = useSubsTableContext()
 
   const columns = useMemo(() => {
     return generateColumns(!!expandable, setFilters)
