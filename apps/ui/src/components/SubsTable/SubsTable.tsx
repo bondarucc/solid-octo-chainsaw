@@ -108,23 +108,38 @@ export default function SubsTable() {
       {
         title: "Роль",
         key: "role",
-        render: (sub: SubItem) => sub.user?.role && TRNS.ROLE[sub.user.role]
+        render: (sub: SubItem) => sub.user?.role ? TRNS.ROLE[sub.user.role] : "Абонент"
       },
       {
         dataIndex: "totalPayableReward",
         title: "Накопленный бонус",
         key: "totalPayableReward",
       },
-      {
-        dataIndex: "login",
-        title: "Cloudy Логин ",
-        key: "login"
+      // {
+      //   dataIndex: "login",
+      //   title: "Clouddy Логин ",
+      //   key: "login"
 
-      },
+      // },
+      // {
+      //   title: "Clouddy Пароль",
+      //   dataIndex: "pwd",
+      //   key: "pwd"
+      // },
       {
-        title: "Cloudy Пароль",
-        dataIndex: "pwd",
-        key: "pwd"
+        title: "pkg",
+        key: "pkg",
+        render: ({package: pkg}: SubItem) => {
+          if (!pkg) return
+          const {endDate, paymentAmount, paymentCurr, paymentDate, pkgType, region, startDate } = pkg
+          return (
+            <div>
+              {region && pkgType && <div style={{whiteSpace: "nowrap"}}>{region} - {pkgType}</div>}
+              <div style={{whiteSpace: "nowrap"}}>{dayjs(startDate).format("DD.MM.YYYY")} - {dayjs(endDate).format("DD.MM.YYYY")}</div>
+              {paymentAmount && paymentCurr && paymentDate && <div style={{whiteSpace: "nowrap"}}>{pkg.paymentAmount?.toFixed(2)}{pkg.paymentCurr} - {dayjs(pkg.paymentDate).format("DD.MM.YYYY")}</div>}
+            </div>
+          )
+        }
       },
       {
         key: "actions",
