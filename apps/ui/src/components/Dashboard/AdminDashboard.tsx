@@ -9,7 +9,6 @@ function AdminDashboard() {
     <>
       {/* <PartnersTable /> */}
       <SubsTableCtxProvider>
-
         <SubsTable />
       </SubsTableCtxProvider>
     </>

@@ -12,7 +12,7 @@ datasource db {
 
 model User {
   id    String @id @default(uuid())
-  login String
+  login String @unique
   pwd   String
   role  Role
   sub   Sub    @relation(fields: [subId], references: [id])
@@ -20,25 +20,30 @@ model User {
 }
 
 model Sub {
-  id                  String     @id @default(uuid())
-  externalId          String     @unique
-  login               String?    @unique
-  pwd                 String?
-  package             Package?
-  note                String?
-  user                User?
-  attractedSubs       Sub[]      @relation("SubOnSub")
-  attractedBy         Sub?       @relation("SubOnSub", fields: [attractorId], references: [id])
-  attractorId         String?
-  secondarySubsAmount Int        @default(0)
-  playlist            String?
-  epg                 String?
-  archive             String?
-  stalkerPortal       String?
-  totalPayableReward  Int        @default(0)
-  sc_ae               SC_AE?
-  srt_ae              SRT_AE[]
-  sssai_ae            SSSAI_AE[]
+  id                 String  @id @default(uuid())
+  externalId         String  @unique
+  login              String? @unique
+  pwd                String?
+  note               String?
+  attractorId        String?
+  m3uPlaylist        String?
+  epg                String?
+  publicKey          String?
+  media              String?
+  totalPayableReward Int     @default(0)
+
+  //relations
+  user User?
+
+  package Package?
+
+  attractedSubs Sub[] @relation("SubOnSub")
+  attractedBy   Sub?  @relation("SubOnSub", fields: [attractorId], references: [id])
+
+  //Audit event refs
+  sc_ae  SC_AE?
+  srt_ae SRT_AE[]
+  // sssai_ae SSSAI_AE[]
 }
 
 model Package {
@@ -48,8 +53,7 @@ model Package {
   endDate       DateTime
   sub           Sub          @relation(fields: [subId], references: [id])
   subId         String       @unique
-  // paymentDetails   PaymentDetails @relation(fields: [paymentDetailsId], references: [id])
-  // paymentDetailsId String         @unique
+  region        Region?
   paymentDate   DateTime?
   paymentAmount Int?
   paymentCurr   Currency?
@@ -57,43 +61,42 @@ model Package {
 }
 
 model SC_AE {
-  id        String     @id @default(uuid())
-  sub       Sub        @relation(fields: [subId], references: [id])
-  subId     String     @unique
-  timestamp DateTime
-  spe_ae    SPE_AE?
-  srt_ae    SRT_AE?
-  sssai_ae  SSSAI_AE[]
+  id            String   @id @default(uuid())
+  sub           Sub      @relation(fields: [subId], references: [id])
+  subId         String   @unique
+  attractorTier Int?
+  timestamp     DateTime
+  spe_ae        SPE_AE?
+  srt_ae        SRT_AE?
+  // sssai_ae      SSSAI_AE[]
 
   @@map("SubCreatedAuditEvent")
 }
 
 model SPE_AE {
-  id                  String   @id @default(uuid())
-  package             Package  @relation(fields: [pkgId], references: [id])
-  pkgId               String
-  prevEndDate         DateTime
-  newEndDate          DateTime
-  secondarySubsAmount Int
-  directSubsAmount    Int
-  totalTier           Int
-  timestamp           DateTime
-  sc_ae               SC_AE    @relation(fields: [sc_ae_id], references: [id])
-  sc_ae_id            String   @unique
+  id          String   @id @default(uuid())
+  package     Package  @relation(fields: [pkgId], references: [id])
+  pkgId       String
+  prevEndDate DateTime
+  newEndDate  DateTime
+  timestamp   DateTime
+  sc_ae       SC_AE    @relation(fields: [sc_ae_id], references: [id])
+  sc_ae_id    String   @unique
 
   @@map("SubPackageExtendedAuditEvent")
 }
 
 model SRT_AE {
-  id                     String   @id @default(uuid())
-  sub                    Sub      @relation(fields: [subId], references: [id])
+  id                     String             @id @default(uuid())
+  sub                    Sub                @relation(fields: [subId], references: [id])
   subId                  String
-  secondarySubsAmount    Int
-  directSubsAmount       Int
-  totalTier              Int
+  // secondarySubsAmount    Int
+  // directSubsAmount       Int
+  // totalTier              Int
+  rewardType             MonetaryRewardType
   timestamp              DateTime
-  sc_ae                  SC_AE    @relation(fields: [sc_ae_id], references: [id])
-  sc_ae_id               String   @unique
+  sc_ae                  SC_AE              @relation(fields: [sc_ae_id], references: [id])
+  sc_ae_id               String             @unique
   rewardAmount           Int
   prevTotalPayableReward Int
   newTotalPayableReward  Int
@@ -101,17 +104,22 @@ model SRT_AE {
   @@map("SubRewardTriggeredAuditEvent")
 }
 
-model SSSAI_AE {
-  id                      String   @id @default(uuid())
-  sc_ae                   SC_AE    @relation(fields: [sc_ae_id], references: [id])
-  sc_ae_id                String
-  timestamp               DateTime
-  prevSecondarySubsAmount Int
-  newSecondarySubsAmount  Int
-  sub                     Sub      @relation(fields: [subId], references: [id])
-  subId                   String
+// model SSSAI_AE {
+//   id                      String   @id @default(uuid())
+//   sc_ae                   SC_AE    @relation(fields: [sc_ae_id], references: [id])
+//   sc_ae_id                String
+//   timestamp               DateTime
+//   prevSecondarySubsAmount Int
+//   newSecondarySubsAmount  Int
+//   sub                     Sub      @relation(fields: [subId], references: [id])
+//   subId                   String
 
-  @@map("SubSecondarySubsAmountIncrementedAuditEvent")
+//   @@map("SubSecondarySubsAmountIncrementedAuditEvent")
+// }
+
+enum MonetaryRewardType {
+  SUB_EXT
+  NEW_SUB
 }
 
 enum Currency {
@@ -127,4 +135,9 @@ enum PackageType {
 enum Role {
   ADMIN
   PARTNER
+}
+
+enum Region {
+  EU
+  USA_CANADA
 }

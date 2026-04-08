@@ -1,7 +1,7 @@
 import express, { type Request } from "express"
 import { prisma } from "../../initDB.ts"
 import createNewSub from "./createNewSub.ts"
-import { GET_SUBS_ARGS, type GetSubAuditEventsResponseBody, type GetSubsListResponseBody} from "./types.ts"
+import { GET_SUBS_ARGS, type GetSubAuditEventsResponseBody, type GetSubsListResponseBody } from "./types.ts"
 import { sortAuditEventsByTimestamp } from "./helpers.ts"
 
 const router = express.Router()
@@ -9,13 +9,19 @@ const router = express.Router()
 const PATH = "/subs"
 
 // Get all subs
-router.get(`/sec${PATH}`, async (req: Request<{}, {}, {}, {externalId: string}>, res) => {
-  const {externalId} = req.query
-  
+router.get(`/sec${PATH}`, async (req: Request<{}, {}, {}, { externalId: string, attractorId: string, login: string }>, res) => {
+  const { externalId, attractorId, login } = req.query
+
   const result: GetSubsListResponseBody = await prisma.sub.findMany({
     ...GET_SUBS_ARGS,
     where: {
-      externalId: externalId ? externalId : undefined
+      externalId: externalId ? externalId : undefined,
+      attractedBy: attractorId ? {
+        externalId: attractorId
+      } : undefined,
+      user: login ? {
+        login
+      } : undefined
     }
   })
   res.json(result)
@@ -32,89 +38,124 @@ router.get(`/sec${PATH}/assignable`, async (_, res) => {
 })
 
 // Create new Sub
-router.post(`/sec${PATH}`, async (req, res)  => {
+router.post(`/sec${PATH}`, async (req, res) => {
   const newSub = await createNewSub(req.body)
-
   res.json(newSub)
 })
 
 // Get sub audit events
-router.get(`/sec${PATH}/:id/audit`, async (req: Request<{id: string}>, res) => {
-  const subId = req.params.id
-  
-  const sc = {...await prisma.sC_AE.findFirstOrThrow({
-    where: {
-      subId
-    },
-    include: {
-      sub: {
-        include: {
-          package: true
-        }
-      }
-    }
-  }), type: "SC" as const}
+// router.get(`/sec${PATH}/:id/audit`, async (req: Request<{ id: string }>, res) => {
+//   const subId = req.params.id
 
-  const spe = (await prisma.sPE_AE.findMany({
-    where: {
-      pkgId: sc.sub.package?.id
-    },
-    include: {sc_ae: {include: {sub: true}}}
-  })).map(speEvent => ({type: "SPE" as const, ...speEvent}))
+//   const sc = {
+//     ...await prisma.sC_AE.findFirstOrThrow({
+//       where: {
+//         subId
+//       },
+//       include: {
+//         sub: {
+//           include: {
+//             package: true
+//           }
+//         }
+//       }
+//     }), type: "SC" as const
+//   }
 
-  const srt = (await prisma.sRT_AE.findMany({
-    where: {
-      subId,
+//   const spe = (await prisma.sPE_AE.findMany({
+//     where: {
+//       pkgId: sc.sub.package?.id
+//     },
+//     include: { sc_ae: { include: { sub: true } } }
+//   })).map(speEvent => ({ type: "SPE" as const, ...speEvent }))
 
-    },
-    include: {sc_ae: {include: {sub: true}}}
-  })).map(srtEvent => ({type: "SRT" as const, ...srtEvent}))
+//   const srt = (await prisma.sRT_AE.findMany({
+//     where: {
+//       subId,
 
-  const sssai = (await prisma.sSSAI_AE.findMany({
-    where: {
-      subId
-    },
-    include: {sc_ae: {include: {sub: {include: {attractedBy: true}}}}}
-  })).map(sssaiEvent => ({type: "SSSAI" as const, ...sssaiEvent}))
+//     },
+//     include: { sc_ae: { include: { sub: true } } }
+//   })).map(srtEvent => ({ type: "SRT" as const, ...srtEvent }))
 
-  const result: GetSubAuditEventsResponseBody = sortAuditEventsByTimestamp([sc, ...spe, ...srt, ...sssai])
+//   const sssai = (await prisma.sSSAI_AE.findMany({
+//     where: {
+//       subId
+//     },
+//     include: { sc_ae: { include: { sub: { include: { attractedBy: true } } } } }
+//   })).map(sssaiEvent => ({ type: "SSSAI" as const, ...sssaiEvent }))
 
-  // const result: GetSubAuditEventsResponseBody = {
-  //   sc,
-  //   spe: await prisma.sPE_AE.findMany({
-  //     where: {
-  //       pkgId: sc.sub.package?.id
-  //     },
-  //     include: {sc_ae: {include: {sub: true}}}
-  //   }),
-  //   srt: await prisma.sRT_AE.findMany({
-  //     where: {
-  //       subId,
+//   const result: GetSubAuditEventsResponseBody = sortAuditEventsByTimestamp([sc, ...spe, ...srt, ...sssai])
 
-  //     },
-  //     include: {sc_ae: {include: {sub: true}}}
-  //   }),
-  //   sssai_ae: await prisma.sSSAI_AE.findMany({
-  //     where: {
-  //       subId
-  //     },
-  //     include: {sc_ae: {include: {sub: {include: {attractedBy: true}}}}}
-  //   })
-  // }
+//   // const result: GetSubAuditEventsResponseBody = {
+//   //   sc,
+//   //   spe: await prisma.sPE_AE.findMany({
+//   //     where: {
+//   //       pkgId: sc.sub.package?.id
+//   //     },
+//   //     include: {sc_ae: {include: {sub: true}}}
+//   //   }),
+//   //   srt: await prisma.sRT_AE.findMany({
+//   //     where: {
+//   //       subId,
 
-  res.json(result)
+//   //     },
+//   //     include: {sc_ae: {include: {sub: true}}}
+//   //   }),
+//   //   sssai_ae: await prisma.sSSAI_AE.findMany({
+//   //     where: {
+//   //       subId
+//   //     },
+//   //     include: {sc_ae: {include: {sub: {include: {attractedBy: true}}}}}
+//   //   })
+//   // }
 
-})
+//   res.json(result)
 
-router.post(`/sec${PATH}/:id/extend`, async (req, res)  => {
+// })
+
+router.post(`/sec${PATH}/:id/extend`, async (req, res) => {
   res.json({})
 })
 
 router.get(`${PATH}/:id`, async (req, res) => {
-  const sub = await prisma.sub.findFirst({where: {
-    id: req.params.id
-  }})
+  const sub = await prisma.sub.findFirst({
+    where: {
+      id: req.params.id
+    }
+  })
   res.json(sub)
 })
 
-export {router as subRouter}
+//Get my subs
+router.get(`${PATH}`, async (req, res) => {
+  const { id } = res.locals.userData.sub
+  // console.log(externalId);
+
+  const directSubs = await prisma.sub.findFirstOrThrow({
+    select: {
+      attractedSubs: {
+        select: {
+          externalId: true,
+          login: true,
+          pwd: true,
+          epg: true,
+          m3uPlaylist: true,
+          media: true,
+          publicKey: true,
+          package: {
+            select: {
+              endDate: true,
+            }
+          }
+        }
+      }
+    },
+    where: {
+      id
+    }
+  })
+
+  res.json(directSubs.attractedSubs)
+})
+
+export { router as subRouter }

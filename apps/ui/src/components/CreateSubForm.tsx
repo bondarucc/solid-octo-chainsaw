@@ -1,4 +1,4 @@
-import { Button, Col, Divider, Flex, Form, Input, Row, Select, Typography, type FormProps, type SelectProps } from "antd"
+import { Button, Col, Divider, Flex, Form, Input, Radio, Row, Select, Typography, type FormProps, type GetProp, type SelectProps } from "antd"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { Currency, Role } from "../../../api/generated/prisma/browser.ts"
 import { createSub, getFullSubsList } from "../api/api"
@@ -6,7 +6,9 @@ import CreatePkgForm from "./CreatePkgForm"
 import CreateUserForm from "./CreateUserForm"
 import useSubsTableContext from "./SubsTable/hooks/useSubsTableContext.ts"
 import type { CreateSubFormShape } from "./types.ts"
-import type { CreateSubRequestBody } from "../../../api/src/api/sub/types.ts"
+import type { CreateSubRequestBody, RewardType } from "../../../api/src/api/sub/types.ts"
+import { UserAddOutlined, UserDeleteOutlined } from "@ant-design/icons"
+import AttractorSelector from "./AttractorSelector.tsx"
 
 function formValuesToRequestBody(formValues: CreateSubFormShape): CreateSubRequestBody {
 
@@ -26,7 +28,7 @@ function formValuesToRequestBody(formValues: CreateSubFormShape): CreateSubReque
     epg: epg ?? undefined,
     archive: archive ?? undefined,
     stalkerPortal: stalkerPortal ?? undefined,
-    
+
   }
 
 }
@@ -62,43 +64,31 @@ function userValidateAndTransform(user: CreateSubFormShape["user"]): CreateSubRe
   } else throw "Ошибка валидации партнера"
 }
 
-export default function CreateSubForm() {
-  const [subsList, setSubsList] = useState<Awaited<ReturnType<typeof getFullSubsList>>>([])
+export default function CreateSubForm({ onSuccess }: { onSuccess: () => void }) {
   const { closeModal } = useSubsTableContext()
   const [form] = Form.useForm<CreateSubFormShape>()
   const [validationError, setValidationError] = useState<string>()
+  const [addUser, setAddUser] = useState<boolean>(false)
 
-  useEffect(() => {
-    getFullSubsList().then(res => setSubsList(res))
-  }, [])
-
-  const attractorIdOptions = useMemo<SelectProps["options"]>(() => {
-    return subsList.map(sub => {
-      return {
-        label: sub.externalId,
-        value: sub.id
-      }
-    })
-  }, [subsList])
-
-  const submit = useCallback<NonNullable<FormProps<CreateSubFormShape>["onFinish"]>>(async (formValues) => {
+  const submit = useCallback<NonNullable<FormProps<CreateSubFormShape>["onFinish"]>>(async formValues => {
     console.log(formValues);
-    try {
-      const request = formValuesToRequestBody(formValues)
-      console.log(request);
-      try {
-        await createSub(request)
-        closeModal()
+    // try {
+    //   const request = formValuesToRequestBody(formValues)
+    //   console.log(request);
+    //   try {
+    //     await createSub(request)
+    //     onSuccess()
+    //     closeModal()
 
-      } catch(e) {
-        console.log(e);
-        
-      }
-      
+    //   } catch(e) {
+    //     console.log(e);
 
-    } catch (e) {
-      setValidationError(e as string)
-    }
+    //   }
+
+
+    // } catch (e) {
+    //   setValidationError(e as string)
+    // }
 
 
   }, [])
@@ -107,7 +97,6 @@ export default function CreateSubForm() {
   return (
     <>
       <Form<CreateSubFormShape>
-        // requiredMark={false}
         form={form}
         onFinish={submit}
         validateMessages={{
@@ -119,6 +108,9 @@ export default function CreateSubForm() {
           },
           user: {
             role: Role.PARTNER
+          },
+          attractor: {
+            rewardType: "MONETARY"
           }
 
         }}
@@ -127,18 +119,16 @@ export default function CreateSubForm() {
       >
         <Row gutter={20}>
           <Col span={12}>
-            <Form.Item 
-              name="externalId" 
-              label="Сторонний ID" 
+            <Form.Item
+              name="externalId"
+              label="Сторонний ID"
               rules={[{ required: true }]}
             >
               <Input />
             </Form.Item>
           </Col>
           <Col span={12}>
-            <Form.Item name="attractorId" label="Реферал">
-              <Select options={attractorIdOptions} />
-            </Form.Item>
+            <AttractorSelector />
           </Col>
           <Col span={12}>
             <Form.Item name="login" label="Логин">
@@ -156,17 +146,17 @@ export default function CreateSubForm() {
             </Form.Item>
           </Col>
           <Col span={12}>
-            <Form.Item name="playlist" label="Плейлист">
+            <Form.Item name="m3uPlaylist" label="M3U">
               <Input />
             </Form.Item>
           </Col>
           <Col span={12}>
-            <Form.Item name="archive" label="Архив">
+            <Form.Item name="media" label="Медиатека">
               <Input />
             </Form.Item>
           </Col>
           <Col span={12}>
-            <Form.Item name="stalkerPortal" label="Сталкер портал">
+            <Form.Item name="publicKey" label="Публичный ключ">
               <Input />
             </Form.Item>
           </Col>
@@ -183,8 +173,17 @@ export default function CreateSubForm() {
         <CreatePkgForm prefix={["package"]} />
 
         <Divider />
-        <Typography.Title level={5}>Партнер</Typography.Title>
-        <CreateUserForm prefix={["user"]} />
+        <Typography.Title level={5}>
+          Партнер
+          <Button
+            type="text"
+            onClick={() => setAddUser(!addUser)}
+            icon={addUser ? <UserAddOutlined /> : <UserDeleteOutlined />}
+            style={{ marginLeft: "10px" }}
+          />
+        </Typography.Title>
+
+        {addUser && <CreateUserForm prefix={["user"]} />}
 
         <Typography.Text type="danger">
           {validationError}
@@ -199,4 +198,3 @@ export default function CreateSubForm() {
     </>
   )
 }
-

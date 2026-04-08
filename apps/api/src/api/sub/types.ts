@@ -1,19 +1,24 @@
 import { type User, type Package, type Sub, SC_AE } from "../../../generated/prisma/client.ts";
-import { PackageCreateInput, SC_AEGetPayload, SPE_AEGetPayload, SRT_AEGetPayload, SSSAI_AEGetPayload } from "../../../generated/prisma/models.ts";
+import { PackageCreateInput, SC_AEGetPayload, SPE_AEGetPayload, SRT_AEGetPayload } from "../../../generated/prisma/models.ts";
 import { SubCreateInput, type SubDefaultArgs, type SubGetPayload } from "../../../generated/prisma/models/Sub.ts";
 
-export type CreateSubRequestBody = ExcludeNull<Omit<
+export type CreateSubRequestBody = Pick<
   SubCreateInput,
-  "id" | "secondarySubsAmount" | "totalPayableReward" | "package" | "user" | "attractedSubs" | "attractedBy"
->> & {
-  package: ExcludeNull<Pick<PackageCreateInput, "pkgType" | "paymentAmount" | "paymentCurr">> & {
+  "epg" | "externalId" | "login" | "pwd" | "m3uPlaylist" | "media" | "note" | "publicKey"
+> & {
+  package: Pick<PackageCreateInput, "pkgType" | "paymentAmount" | "paymentCurr" | "region"> & {
     startDate: string,
     endDate: string,
     paymentDate?: string
   },
   user?: Omit<User, "id" | "subId">,
-  attractorId?: string
+  attractor?: {
+    externalId: Sub["externalId"],
+    rewardType: RewardType
+  }
 }
+
+export type RewardType = "PACKAGE_EXTENSION" | "MONETARY"
 
 type ExcludeNull<T> = {
   [K in keyof T]: Exclude<T[K], null>
@@ -25,7 +30,7 @@ export const CREATE_SUB_ARGS = {
   },
 } satisfies SubDefaultArgs
 
-export type CreateSubResponseBody = SubGetPayload<typeof CREATE_SUB_ARGS>
+export type CreateSubResponseBody = Sub
 
 
 
@@ -47,6 +52,11 @@ export const GET_SUBS_ARGS = {
       omit: {
         pwd: true
       }
+    },
+    attractedBy: {
+      select: {
+        externalId: true
+      }
     }
   }
 } satisfies SubDefaultArgs
@@ -65,5 +75,4 @@ export type GetAssignableSubsResponseBody = SubGetPayload<{}>[]
 export type GetSubAuditEventsResponseBody = (
   | { type: "SC" } & SC_AE
   | { type: "SPE" } & SPE_AEGetPayload<{ include: { sc_ae: { include: { sub: true } } } }>
-  | { type: "SRT" } & SRT_AEGetPayload<{ include: { sc_ae: { include: { sub: true } } } }>
-  | { type: "SSSAI" } & SSSAI_AEGetPayload<{ include: { sc_ae: { include: { sub: { include: { attractedBy: true } } } } } }>)[]
+  | { type: "SRT" } & SRT_AEGetPayload<{ include: { sc_ae: { include: { sub: true } } } }>)[]

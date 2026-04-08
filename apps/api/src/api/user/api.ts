@@ -1,8 +1,5 @@
-import { hashSync } from "bcrypt"
 import express from "express"
 import { prisma } from "../../initDB.ts"
-import { CreateUserRequestBody, CreateUserResponseBody } from "./types.ts"
-import createNewSub from "../sub/createNewSub.ts"
 
 const router = express.Router()
 

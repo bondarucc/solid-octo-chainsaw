@@ -1,103 +1,184 @@
-import { Button, Dropdown, Table, type MenuProps, type TableColumnProps, type TableProps } from "antd"
-import { Fragment, useCallback, useEffect, useMemo, useState, type MouseEventHandler, type PropsWithChildren } from "react"
-import type { Package, Sub, User } from "../../../../api/generated/prisma/browser.ts"
-import type { GetSubsListResponseBody } from "../../../../api/src/api/sub/types.ts"
+import { DownOutlined, MoreOutlined, PlusOutlined, UpOutlined } from "@ant-design/icons"
+import { Badge, Button, Dropdown, Table, type GetProp, type MenuProps } from "antd"
+import dayjs from "dayjs"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { getFullSubsList } from "../../api/api.ts"
-import useSubsTableContext from "./hooks/useSubsTableContext.ts"
-import SubsManagementPanel from "./SubsManagementPanel.tsx"
-import { DoubleRightOutlined, MoreOutlined } from "@ant-design/icons"
-import type { ContextShape } from "./ContextProvider.tsx"
 import { ClickGuard } from "../../helpers/ClickGuard.tsx"
+import CreateSubForm from "../CreateSubForm.tsx"
 import { AuditModalContent } from "./AuditModalContent.tsx"
+import FilteringPanel from "./FilteringPanel.tsx"
+import useSubsTableContext from "./hooks/useSubsTableContext.ts"
+import { Role } from "../../../../api/generated/prisma/enums.ts"
 
+const TRNS = {
+ ROLE: {
+  [Role.ADMIN]: "Админ",
+  [Role.PARTNER]: "Партнер"
+ } as const
+}
 
+type SubItem = Awaited<ReturnType<typeof getFullSubsList>>[number]
 
 export default function SubsTable() {
-  const [allSubs, setAllSubs] = useState<GetSubsListResponseBody>([])
-  const { filters } = useSubsTableContext()
-  // console.log(filters);
+  const [allSubs, setAllSubs] = useState<SubItem[]>([])
+  const { filtersForm, setModalConfig } = useSubsTableContext()
 
   const getAllSubs = useCallback(async () => {
-    const response = await getFullSubsList(filters)
+    const response = await getFullSubsList(filtersForm.getFieldsValue())
     setAllSubs(response)
 
-  }, [setAllSubs, filters])
+  }, [setAllSubs])
 
   const onCreateSuccessful = useCallback(() => {
     getAllSubs()
   }, [getAllSubs])
 
+  const columns = useMemo<GetProp<typeof Table<SubItem>, "columns">>(() => {
+    return [
+      {
+        title: "Внешний ID",
+        key: "externalId",
+        render({ externalId, package: pkg }: SubItem) {
+          const endDate = dayjs(pkg?.endDate)
+          const now = dayjs()
+          const oneMonthSinceNow = now.add(1, "M")
+          let tagColor: string
+
+          if (endDate.isAfter(oneMonthSinceNow)) {
+            tagColor = "green"
+          } else if (endDate.isAfter(now) && endDate.isBefore(oneMonthSinceNow)) {
+            tagColor = "orange"
+          } else tagColor = "red"
+
+          return (
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+              <div style={{ backgroundColor: tagColor, width: 10, height: 10, borderRadius: "50%" }} />
+              {externalId}
+
+            </div>
+          )
+        }
+      },
+      {
+        key: "attractedSubs",
+        title: "Привлеченные абоненты",
+        render(sub: SubItem) {
+          return sub.attractedSubs.length
+            ? (
+              <Badge count={sub.attractedSubs.length} size="small" color="black" >
+                <Button
+                  onClick={() => {
+                    filtersForm.resetFields()
+                    filtersForm.setFieldsValue({ attractorId: sub.externalId })
+                    filtersForm.submit()
+                  }}
+                  icon={<DownOutlined />}
+                />
+              </Badge>
+            )
+            : null
+        },
+      },
+      {
+        key: "attractor",
+        title: "Реферал",
+        render(attractor: SubItem) {
+          if (attractor.attractedBy == null) return
+          return <span style={{ whiteSpace: "nowrap" }}>
+
+            <Button
+              onClick={() => {
+                filtersForm.resetFields()
+                filtersForm.setFieldsValue({ externalId: attractor.attractedBy?.externalId })
+                filtersForm.submit()
+              }}
+              icon={<UpOutlined />}
+            >
+              {attractor.attractedBy.externalId}
+            </Button>
+          </span>
+        },
+      },
+      {
+        dataIndex: ["user", "login"],
+        title: "Логин",
+        key: "portalLogin"
+
+      },
+      {
+        title: "Роль",
+        key: "role",
+        render: (sub: SubItem) => sub.user?.role && TRNS.ROLE[sub.user.role]
+      },
+      {
+        dataIndex: "totalPayableReward",
+        title: "Накопленный бонус",
+        key: "totalPayableReward",
+      },
+      {
+        dataIndex: "login",
+        title: "Cloudy Логин ",
+        key: "login"
+
+      },
+      {
+        title: "Cloudy Пароль",
+        dataIndex: "pwd",
+        key: "pwd"
+      },
+      {
+        key: "actions",
+        title: (
+          <Button
+            style={{ color: "black", backgroundColor: "yellowgreen" }}
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() =>
+              setModalConfig({
+                open: true,
+                title: "Новый абонент",
+                children: <CreateSubForm onSuccess={onCreateSuccessful} />
+              })
+            }
+          />
+        ),
+        render: (sub: SubItem) => {
+          return <ActionsDropdown sub={sub} />
+        },
+        fixed: "end",
+      }
+
+    ]
+  }, [filtersForm])
+
+
+
   useEffect(() => {
     getAllSubs()
-  }, [filters.externalId])
+  }, [])
 
   return (
     <>
-      <SubsManagementPanel onCreateSuccessful={onCreateSuccessful} />
-      <InnerTable subsList={allSubs} expandable />
+      <div style={{ marginBottom: 12 }}>
+        <FilteringPanel onSearch={getAllSubs} />
+      </div>
+
+      <Table<SubItem>
+        scroll={{ x: true }}
+        pagination={false}
+        rowKey={sub => sub.externalId}
+        dataSource={allSubs}
+        columns={columns}
+      />
     </>
 
   )
 }
 
-function generateColumns(expandable: boolean, setFilters: ContextShape["setFilters"]): TableColumnProps<InnerTableItem>[] {
-  return [
-    {
-      dataIndex: "externalId",
-      title: "Внешний ID",
-      key: "externalId",
-    },
-    expandable && Table.EXPAND_COLUMN,
-    !expandable && {
-      key: "dig",
-      render(sub: InnerTableItem) {
-        return (
-          <Button onClick={() => setFilters({ externalId: sub.externalId })} icon={<DoubleRightOutlined />} />
-        )
-      },
-    },
-    {
-      dataIndex: ["user", "login"],
-      title: "Логин",
-      key: "portalLogin"
+function ActionsDropdown({ sub }: { sub: SubItem }) {
+  const { setModalConfig } = useSubsTableContext()
 
-    },
-    {
-      dataIndex: "totalPayableReward",
-      title: "Накопленный бонус",
-      key: "totalPayableReward",
-    },
-    {
-      dataIndex: "secondarySubsAmount",
-      title: "Вторичные подписчики",
-      key: "secondarySubsAmount",
-    },
-    {
-      dataIndex: "login",
-      title: "Cloudy Логин ",
-      key: "login"
 
-    },
-    {
-      title: "Cloudy Пароль",
-      dataIndex: "pwd",
-      key: "pwd"
-    },
-    {
-      key: "actions",
-      render: (sub: InnerTableItem) => {
-        return <ActionsDropdown sub={sub} />
-      },
-      fixed: "end",
-    }
-
-  ].filter(Boolean)
-}
-
-function ActionsDropdown({ sub }: { sub: InnerTableItem }) {
-  const {setModalConfig} = useSubsTableContext()
-
-  
   const items = useMemo<MenuProps["items"]>(() => {
     return [
       {
@@ -126,50 +207,3 @@ function ActionsDropdown({ sub }: { sub: InnerTableItem }) {
 }
 
 
-
-type SubWithUserAndPkg = Sub & {
-  package: Package | null,
-  user: Omit<User, "pwd"> | null
-}
-
-type InnerTableItem = SubWithUserAndPkg & {
-  attractedSubs?: SubWithUserAndPkg[]
-}
-
-type InnerTableProps = {
-  subsList: InnerTableItem[]
-  expandable?: true
-}
-
-function InnerTable({ subsList, expandable }: InnerTableProps) {
-  const [expandedRows, setExpandedRows] = useState<NonNullable<TableProps["expandable"]>["expandedRowKeys"]>()
-
-  const { setFilters } = useSubsTableContext()
-
-  const columns = useMemo(() => {
-    return generateColumns(!!expandable, setFilters)
-  }, [expandable, setFilters])
-
-  return (
-    <Table<InnerTableItem>
-      pagination={false}
-      expandable={expandable && {
-        expandRowByClick: true,
-        expandedRowRender: (sub) => <InnerTable subsList={sub.attractedSubs ?? []} />,
-        expandedRowKeys: expandedRows,
-        rowExpandable: (sub => !!sub.attractedSubs && !!sub.attractedSubs.length),
-        onExpandedRowsChange(expandedKeys) {
-          setExpandedRows(expandedKeys)
-        },
-        columnTitle: "Абоненты",
-        expandedRowOffset: 1,
-        // defaultExpandAllRows: subsList.length == 1
-      }}
-
-      rowKey={sub => sub.externalId}
-      dataSource={subsList}
-      columns={columns}
-    />
-  )
-
-}

@@ -1,10 +1,11 @@
 import { createContext, useCallback, useState, type PropsWithChildren } from "react"
 import type { Filters } from "./FilteringPanel.tsx"
-import { Modal, type ModalProps } from "antd"
+import { Form, Modal, type FormInstance, type ModalProps } from "antd"
 
 export type ContextShape = {
-  filters: Filters
+  filtersForm: FormInstance<Filters>
   setFilters: (filters: Filters) => void
+  filters: Filters
   closeModal: () => void
   setModalConfig: (config: ModalConfig) => void
 }
@@ -14,7 +15,9 @@ type ModalConfig = Pick<ModalProps, "children" | "title" | "open">
 export const subsTableContext = createContext<ContextShape | null>(null)
 
 export default function SubsTableCtxProvider({children}: PropsWithChildren) {
-  const [ filters, setFilters ] = useState<ContextShape["filters"]>({})
+  // const [ filters, setFilters ] = useState<ContextShape["filters"]>({})
+  const [form] = Form.useForm<Filters>()
+
   const [ modalConfig, setModalConfig ] = useState<ModalConfig>({open: false})
   const closeModal = useCallback(() => {
     setModalConfig({open: false})
@@ -26,8 +29,7 @@ export default function SubsTableCtxProvider({children}: PropsWithChildren) {
   return (
     <subsTableContext.Provider 
       value={{
-        filters,
-        setFilters,
+        filtersForm: form,
         closeModal,
         setModalConfig
 

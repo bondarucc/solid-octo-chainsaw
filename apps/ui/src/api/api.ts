@@ -8,8 +8,15 @@ async function fetchWrapper(...args: Parameters<typeof fetch>) {
   return await response.json()
 }
 
+export async function login({login, pwd}: {login: string, pwd: string}) {
+  return await fetchWrapper(
+    "api/auth/login",
+    { method: "POST", headers: [["Content-Type", "application/json"]], body: JSON.stringify({ login, pwd }) }
+  )
+}
+
 export async function logout() {
-  await fetchWrapper("/api/auth/logout", {method: "POST"})
+  await fetch("/api/auth/logout", {method: "POST"})
 }
 
 export async function getPartnersList(): Promise<GetUsersListResponseBody> {
@@ -21,12 +28,11 @@ export async function getPartnersList(): Promise<GetUsersListResponseBody> {
 
 }
 
-export async function getFullSubsList(filter?: Filters): Promise<GetSubsListResponseBody> {
-  const query = filter?.externalId ? `?externalId=${filter.externalId}` : ""
-  const response: GetSubsListResponseBody = await fetchWrapper("/api/sec/subs" + query)
+export async function getFullSubsList(filter: Filters): Promise<GetSubsListResponseBody> {
+  const query = new URLSearchParams(Object.entries(filter).filter(pair => Boolean(pair[1])))
+  return fetchWrapper("/api/sec/subs?" + query.toString())
   // console.log(response);
-  
-  return response
+  // return response
 }
 
 export async function getAssignableSubs(): Promise<GetAssignableSubsResponseBody> {
@@ -56,4 +62,8 @@ export async function getSubAuditEvents(id: string): Promise<GetSubAuditEventsRe
     = await fetchWrapper(`/api/sec/subs/${id}/audit`)
 
   return response
+}
+
+export async function getMySubs() {
+  return fetchWrapper(`/api/subs`)
 }
