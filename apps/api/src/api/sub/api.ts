@@ -3,6 +3,7 @@ import { prisma } from "../../initDB.ts"
 import createNewSub from "./createNewSub.ts"
 import { GET_SUBS_ARGS, type GetSubAuditEventsResponseBody, type GetSubsListResponseBody } from "./types.ts"
 import { sortAuditEventsByTimestamp } from "./helpers.ts"
+import { extendSubPackage } from "./extendSubPackage.ts"
 
 const router = express.Router()
 
@@ -44,76 +45,78 @@ router.post(`/sec${PATH}`, async (req, res) => {
 })
 
 // Get sub audit events
-// router.get(`/sec${PATH}/:id/audit`, async (req: Request<{ id: string }>, res) => {
-//   const subId = req.params.id
+router.get(`/sec${PATH}/:id/audit`, async (req: Request<{ id: string }>, res) => {
+  const subId = req.params.id
 
-//   const sc = {
-//     ...await prisma.sC_AE.findFirstOrThrow({
-//       where: {
-//         subId
-//       },
-//       include: {
-//         sub: {
-//           include: {
-//             package: true
-//           }
-//         }
-//       }
-//     }), type: "SC" as const
-//   }
+  const sc = {
+    ...await prisma.sC_AE.findFirstOrThrow({
+      where: {
+        subId
+      },
+      include: {
+        sub: {
+          include: {
+            package: true
+          }
+        }
+      }
+    }), 
+    type: "SC" as const
+  }
 
-//   const spe = (await prisma.sPE_AE.findMany({
-//     where: {
-//       pkgId: sc.sub.package?.id
-//     },
-//     include: { sc_ae: { include: { sub: true } } }
-//   })).map(speEvent => ({ type: "SPE" as const, ...speEvent }))
+  const spe = (await prisma.sPE_AE.findMany({
+    where: {
+      pkgId: sc.sub.package?.id
+    },
+    include: { sc_ae: { include: { sub: true } } }
+  })).map(speEvent => ({ type: "SPE" as const, ...speEvent }))
 
-//   const srt = (await prisma.sRT_AE.findMany({
-//     where: {
-//       subId,
+  const srt = (await prisma.sRT_AE.findMany({
+    where: {
+      subId,
+    },
+    include: { sc_ae: { include: { sub: true } } }
+  })).map(srtEvent => ({ type: "SRT" as const, ...srtEvent }))
 
-//     },
-//     include: { sc_ae: { include: { sub: true } } }
-//   })).map(srtEvent => ({ type: "SRT" as const, ...srtEvent }))
+  // const sssai = (await prisma.sSSAI_AE.findMany({
+  //   where: {
+  //     subId
+  //   },
+  //   include: { sc_ae: { include: { sub: { include: { attractedBy: true } } } } }
+  // })).map(sssaiEvent => ({ type: "SSSAI" as const, ...sssaiEvent }))
 
-//   const sssai = (await prisma.sSSAI_AE.findMany({
-//     where: {
-//       subId
-//     },
-//     include: { sc_ae: { include: { sub: { include: { attractedBy: true } } } } }
-//   })).map(sssaiEvent => ({ type: "SSSAI" as const, ...sssaiEvent }))
+  const result: GetSubAuditEventsResponseBody = sortAuditEventsByTimestamp([sc, ...spe, ...srt])
 
-//   const result: GetSubAuditEventsResponseBody = sortAuditEventsByTimestamp([sc, ...spe, ...srt, ...sssai])
+  // const result: GetSubAuditEventsResponseBody = {
+  //   sc,
+  //   spe: await prisma.sPE_AE.findMany({
+  //     where: {
+  //       pkgId: sc.sub.package?.id
+  //     },
+  //     include: {sc_ae: {include: {sub: true}}}
+  //   }),
+  //   srt: await prisma.sRT_AE.findMany({
+  //     where: {
+  //       subId,
 
-//   // const result: GetSubAuditEventsResponseBody = {
-//   //   sc,
-//   //   spe: await prisma.sPE_AE.findMany({
-//   //     where: {
-//   //       pkgId: sc.sub.package?.id
-//   //     },
-//   //     include: {sc_ae: {include: {sub: true}}}
-//   //   }),
-//   //   srt: await prisma.sRT_AE.findMany({
-//   //     where: {
-//   //       subId,
+  //     },
+  //     include: {sc_ae: {include: {sub: true}}}
+  //   }),
+  //   sssai_ae: await prisma.sSSAI_AE.findMany({
+  //     where: {
+  //       subId
+  //     },
+  //     include: {sc_ae: {include: {sub: {include: {attractedBy: true}}}}}
+  //   })
+  // }
 
-//   //     },
-//   //     include: {sc_ae: {include: {sub: true}}}
-//   //   }),
-//   //   sssai_ae: await prisma.sSSAI_AE.findMany({
-//   //     where: {
-//   //       subId
-//   //     },
-//   //     include: {sc_ae: {include: {sub: {include: {attractedBy: true}}}}}
-//   //   })
-//   // }
+  res.json(result)
 
-//   res.json(result)
+})
 
-// })
-
-router.post(`/sec${PATH}/:id/extend`, async (req, res) => {
+router.post(`/sec${PATH}/:id/extend`, async (req: Request<{ id: string }>, res) => {
+  const subId = req.params.id
+  await extendSubPackage(subId)
   res.json({})
 })
 
