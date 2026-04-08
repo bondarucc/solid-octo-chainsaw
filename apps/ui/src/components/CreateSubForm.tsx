@@ -12,25 +12,33 @@ import AttractorSelector from "./AttractorSelector.tsx"
 
 function formValuesToRequestBody(formValues: CreateSubFormShape): CreateSubRequestBody {
 
-  const { user, epg, stalkerPortal, archive, playlist, note, package: pkg, attractorId, externalId, login, pwd } = formValues
+  const { user, epg, m3uPlaylist, note, package: pkg, externalId, login, pwd, media, publicKey, attractor} = formValues
   if (!externalId) throw "Пустой сторонний ID"
   const userToSubmit = userValidateAndTransform(user)
   const pkgToSubmit = packageValidateAndTransform(pkg)
+  const attractorToSubmit = attractorValidateAndTransform(attractor)
   return {
     user: userToSubmit,
     package: pkgToSubmit,
-    attractorId: attractorId ?? undefined,
     externalId,
     login: login ?? undefined,
     pwd: pwd ?? undefined,
     note: note ?? undefined,
-    playlist: playlist ?? undefined,
+    m3uPlaylist: m3uPlaylist ?? undefined,
     epg: epg ?? undefined,
-    archive: archive ?? undefined,
-    stalkerPortal: stalkerPortal ?? undefined,
-
+    media: media ?? undefined,
+    publicKey: publicKey ?? undefined,
+    attractor: attractorToSubmit
   }
 
+}
+
+function attractorValidateAndTransform({externalId, rewardType}: CreateSubFormShape["attractor"]): CreateSubRequestBody["attractor"]  {
+  if (externalId && rewardType) return {
+    externalId,
+    rewardType
+  }
+  
 }
 
 function validatePkgFromToDates(dates: NonNullable<CreateSubFormShape["package"]>["activationPeriod"]): dates is [string, string] {
@@ -48,7 +56,8 @@ function packageValidateAndTransform(pkg: CreateSubFormShape["package"]): Create
     paymentAmount: pkg.paymentAmount ?? undefined,
     paymentCurr: pkg.paymentCurr ?? undefined,
     paymentDate: pkg.paymentDate ?? undefined,
-    pkgType: pkg.pkgType ?? undefined
+    pkgType: pkg.pkgType ?? undefined,
+    region: pkg.region ?? undefined
   }
 }
 
@@ -72,23 +81,21 @@ export default function CreateSubForm({ onSuccess }: { onSuccess: () => void }) 
 
   const submit = useCallback<NonNullable<FormProps<CreateSubFormShape>["onFinish"]>>(async formValues => {
     console.log(formValues);
-    // try {
-    //   const request = formValuesToRequestBody(formValues)
-    //   console.log(request);
-    //   try {
-    //     await createSub(request)
-    //     onSuccess()
-    //     closeModal()
-
-    //   } catch(e) {
-    //     console.log(e);
-
-    //   }
+    try {
+      const request = formValuesToRequestBody(formValues)
+      console.log(request);
+      try {
+        await createSub(request)
+        onSuccess()
+        closeModal()
+      } catch(e) {
+        console.log(e);
+      }
 
 
-    // } catch (e) {
-    //   setValidationError(e as string)
-    // }
+    } catch (e) {
+      setValidationError(e as string)
+    }
 
 
   }, [])

@@ -20,7 +20,7 @@ export type CreateSubFormShape = Pick<
   package: ReplaceDatesWithStrings<Pick<Package, "paymentAmount" | "paymentCurr" | "paymentDate" | "pkgType" | "region">> & {
     activationPeriod: [string | null, string | null] | null
   },
-  attractor?: {
+  attractor: {
     rewardType?: RewardType
     externalId?: string
   }
