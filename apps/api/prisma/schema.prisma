@@ -67,7 +67,7 @@ model SC_AE {
   attractorTier Int?
   timestamp     DateTime
   spe_ae        SPE_AE?
-  srt_ae        SRT_AE?
+  srt_ae        SRT_AE[]
   // sssai_ae      SSSAI_AE[]
 
   @@map("SubCreatedAuditEvent")
@@ -80,8 +80,8 @@ model SPE_AE {
   prevEndDate DateTime
   newEndDate  DateTime
   timestamp   DateTime
-  sc_ae       SC_AE    @relation(fields: [sc_ae_id], references: [id])
-  sc_ae_id    String   @unique
+  sc_ae       SC_AE?    @relation(fields: [sc_ae_id], references: [id])
+  sc_ae_id    String?   @unique
 
   @@map("SubPackageExtendedAuditEvent")
 }
@@ -96,7 +96,7 @@ model SRT_AE {
   rewardType             MonetaryRewardType
   timestamp              DateTime
   sc_ae                  SC_AE              @relation(fields: [sc_ae_id], references: [id])
-  sc_ae_id               String             @unique
+  sc_ae_id               String             
   rewardAmount           Int
   prevTotalPayableReward Int
   newTotalPayableReward  Int

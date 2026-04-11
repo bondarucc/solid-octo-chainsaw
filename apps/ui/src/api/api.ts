@@ -67,3 +67,7 @@ export async function getSubAuditEvents(id: string): Promise<GetSubAuditEventsRe
 export async function getMySubs() {
   return fetchWrapper(`/api/subs`)
 }
+
+export async function extendSubPkgBy1Year(id: string) {
+  return fetchWrapper(`/api/sec/subs/${id}/extend`)
+}

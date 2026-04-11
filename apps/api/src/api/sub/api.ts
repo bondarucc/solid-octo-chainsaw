@@ -114,7 +114,7 @@ router.get(`/sec${PATH}/:id/audit`, async (req: Request<{ id: string }>, res) =>
 
 })
 
-router.post(`/sec${PATH}/:id/extend`, async (req: Request<{ id: string }>, res) => {
+router.get(`/sec${PATH}/:id/extend`, async (req: Request<{ id: string }>, res) => {
   const subId = req.params.id
   await extendSubPackage(subId)
   res.json({})

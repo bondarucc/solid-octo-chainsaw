@@ -44,6 +44,7 @@ export default function SubsTableCtxProvider({children}: PropsWithChildren) {
         
         title={modalConfig.title}
         mask={{closable: true, blur: true}}
+        destroyOnHidden
         
 
         onCancel={() => closeModal()}

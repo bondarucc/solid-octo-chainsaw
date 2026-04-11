@@ -14,12 +14,20 @@ export async function extendSubPackage(id: Sub["id"]) {
   })
 
   await prisma.$transaction(async trn => {
+    const newEndDate = dayjs(currentPkg.endDate).add(1, "y").toDate()
     const { sub: extendedSub } = await trn.package.update({
       where: {
         id: currentPkg.id
       },
       data: {
-        endDate: dayjs(currentPkg.endDate).add(1, "y").toDate()
+        endDate: newEndDate,
+        spe_ae: {
+          create: {
+            timestamp: new Date(),
+            newEndDate: newEndDate,
+            prevEndDate: currentPkg.endDate
+          }
+        }
       },
       select: {
         sub: {

@@ -2,7 +2,7 @@ import { DownOutlined, MoreOutlined, PlusOutlined, UpOutlined } from "@ant-desig
 import { Badge, Button, Dropdown, Table, type GetProp, type MenuProps } from "antd"
 import dayjs from "dayjs"
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { getFullSubsList } from "../../api/api.ts"
+import { extendSubPkgBy1Year, getFullSubsList } from "../../api/api.ts"
 import { ClickGuard } from "../../helpers/ClickGuard.tsx"
 import CreateSubForm from "../CreateSubForm.tsx"
 import { AuditModalContent } from "./AuditModalContent.tsx"
@@ -158,7 +158,7 @@ export default function SubsTable() {
           />
         ),
         render: (sub: SubItem) => {
-          return <ActionsDropdown sub={sub} />
+          return <ActionsDropdown sub={sub} refresh={getAllSubs} />
         },
         fixed: "end",
       }
@@ -190,7 +190,7 @@ export default function SubsTable() {
   )
 }
 
-function ActionsDropdown({ sub }: { sub: SubItem }) {
+function ActionsDropdown({ sub, refresh }: { sub: SubItem, refresh: () => void }) {
   const { setModalConfig } = useSubsTableContext()
 
 
@@ -205,6 +205,14 @@ function ActionsDropdown({ sub }: { sub: SubItem }) {
             title: "Audit",
             children: <AuditModalContent {...sub} />
           })
+        }
+      },
+      {
+        key: 2,
+        label: "Продлить пакет на 1 год",
+        onClick: async () => {
+          await extendSubPkgBy1Year(sub.id)
+          refresh()
         }
       }
     ]
