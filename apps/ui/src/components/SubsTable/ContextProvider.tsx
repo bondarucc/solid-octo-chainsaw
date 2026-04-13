@@ -14,20 +14,20 @@ type ModalConfig = Pick<ModalProps, "children" | "title" | "open">
 
 export const subsTableContext = createContext<ContextShape | null>(null)
 
-export default function SubsTableCtxProvider({children}: PropsWithChildren) {
+export default function SubsTableCtxProvider({ children }: PropsWithChildren) {
   // const [ filters, setFilters ] = useState<ContextShape["filters"]>({})
   const [form] = Form.useForm<Filters>()
 
-  const [ modalConfig, setModalConfig ] = useState<ModalConfig>({open: false})
+  const [modalConfig, setModalConfig] = useState<ModalConfig>({ open: false })
   const closeModal = useCallback(() => {
-    setModalConfig({open: false})
+    setModalConfig({ open: false })
   }, [setModalConfig])
 
 
   // console.log(filters);
-  
+
   return (
-    <subsTableContext.Provider 
+    <subsTableContext.Provider
       value={{
         filtersForm: form,
         closeModal,
@@ -41,17 +41,20 @@ export default function SubsTableCtxProvider({children}: PropsWithChildren) {
         closable={true}
         open={modalConfig.open}
         footer={false}
-        
+
         title={modalConfig.title}
-        mask={{closable: true, blur: true}}
+        mask={{ closable: true, blur: true }}
         destroyOnHidden
-        
+
 
         onCancel={() => closeModal()}
-        // okButtonProps={{ htmlType: "submit" }}
-        // onOk={onOk}
+      // okButtonProps={{ htmlType: "submit" }}
+      // onOk={onOk}
       >
-        {modalConfig.children}
+        <div style={{ paddingTop: 12 }}>
+          {modalConfig.children}
+
+        </div>
 
       </Modal>
     </subsTableContext.Provider>

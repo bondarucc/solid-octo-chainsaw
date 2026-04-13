@@ -71,3 +71,8 @@ export async function getMySubs() {
 export async function extendSubPkgBy1Year(id: string) {
   return fetchWrapper(`/api/sec/subs/${id}/extend`)
 }
+
+export async function doRepayment(id: string, amount: number) {
+  await fetchWrapper(`/api/sec/subs/${id}/repayment`, {method: "POST", body: JSON.stringify({repaymentAmount: amount}), headers: [["Content-Type", "application/json"]]})
+  
+}

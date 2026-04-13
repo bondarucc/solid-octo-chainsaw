@@ -9,6 +9,7 @@ import { AuditModalContent } from "./AuditModalContent.tsx"
 import FilteringPanel from "./FilteringPanel.tsx"
 import useSubsTableContext from "./hooks/useSubsTableContext.ts"
 import { Role } from "../../../../api/generated/prisma/enums.ts"
+import RepaymentModalContent from "./RepaymentModalContent.tsx"
 
 const TRNS = {
  ROLE: {
@@ -62,6 +63,7 @@ export default function SubsTable() {
       {
         key: "attractedSubs",
         title: "Привлеченные абоненты",
+        align: "center",
         render(sub: SubItem) {
           return sub.attractedSubs.length
             ? (
@@ -114,6 +116,7 @@ export default function SubsTable() {
         dataIndex: "totalPayableReward",
         title: "Накопленный бонус",
         key: "totalPayableReward",
+        align: "center"
       },
       // {
       //   dataIndex: "login",
@@ -127,7 +130,7 @@ export default function SubsTable() {
       //   key: "pwd"
       // },
       {
-        title: "pkg",
+        title: "Пакет",
         key: "pkg",
         render: ({package: pkg}: SubItem) => {
           if (!pkg) return
@@ -180,7 +183,9 @@ export default function SubsTable() {
 
       <Table<SubItem>
         scroll={{ x: true }}
-        pagination={false}
+        pagination={{
+
+        }}
         rowKey={sub => sub.externalId}
         dataSource={allSubs}
         columns={columns}
@@ -214,9 +219,20 @@ function ActionsDropdown({ sub, refresh }: { sub: SubItem, refresh: () => void }
           await extendSubPkgBy1Year(sub.id)
           refresh()
         }
+      },
+      {
+        key: 3,
+        label: "Рассчет",
+        onClick: () => {
+          setModalConfig({
+            open: true,
+            title: "Рассчет",
+            children: <RepaymentModalContent {...sub} onSuccess={refresh}/>
+          })
+        }
       }
     ]
-  }, [sub])
+  }, [sub, refresh])
 
   return (
     <ClickGuard>

@@ -9,18 +9,18 @@ type AuditModalContentProps = {
 }
 
 function eventToString(event: GetSubAuditEventsResponseBody[number]): ReactNode {
-  
+
   switch (event.type) {
     case ("SC"):
       return "Абонет создан"
     case ("SPE"):
       return (
         <>
-          Пакет продлен до <Tag variant="outlined">{dayjs(event.newEndDate).format("DD.MM.YYYY")}</Tag>{ event.sc_ae && <> за подключение  <Tag variant="outlined">{event.sc_ae.sub.externalId}</Tag></>}
+          Пакет продлен до <Tag variant="outlined">{dayjs(event.newEndDate).format("DD.MM.YYYY")}</Tag>{event.sc_ae && <> за подключение  <Tag variant="outlined">{event.sc_ae.sub.externalId}</Tag></>}
         </>
       )
     case ("SRT"):
-      const {newTotalPayableReward, rewardAmount, rewardType, sc_ae} = event
+      const { newTotalPayableReward, rewardAmount, rewardType, sc_ae } = event
       if (rewardType === "NEW_SUB") {
         return (
           <>
@@ -34,6 +34,15 @@ function eventToString(event: GetSubAuditEventsResponseBody[number]): ReactNode 
           </>
         )
       }
+
+    case ("SR"):
+      const { newTotalPayableReward: newTotal, repaymentAmount } = event
+      return (
+        <>
+          Выплата <Tag variant="outlined">{repaymentAmount} у.е.</Tag><br />Остаток к выплате: <Tag variant="outlined">{newTotal} у.е.</Tag>
+        </>
+      )
+
     default: return ""
   }
 }

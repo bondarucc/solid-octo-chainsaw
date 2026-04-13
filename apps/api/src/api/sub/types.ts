@@ -1,5 +1,5 @@
 import { type User, type Package, type Sub, SC_AE } from "../../../generated/prisma/client.ts";
-import { PackageCreateInput, SC_AEGetPayload, SPE_AEGetPayload, SRT_AEGetPayload } from "../../../generated/prisma/models.ts";
+import { PackageCreateInput, SC_AEGetPayload, SPE_AEGetPayload, SR_AEGetPayload, SRT_AEGetPayload } from "../../../generated/prisma/models.ts";
 import { SubCreateInput, type SubDefaultArgs, type SubGetPayload } from "../../../generated/prisma/models/Sub.ts";
 
 export type CreateSubRequestBody = Pick<
@@ -75,4 +75,5 @@ export type GetAssignableSubsResponseBody = SubGetPayload<{}>[]
 export type GetSubAuditEventsResponseBody = (
   | { type: "SC" } & SC_AE
   | { type: "SPE" } & SPE_AEGetPayload<{ include: { sc_ae: { include: { sub: true } } } }>
+  | { type: "SR" } & SR_AEGetPayload<{}>
   | { type: "SRT" } & SRT_AEGetPayload<{ include: { sc_ae: { include: { sub: true } } } }>)[]

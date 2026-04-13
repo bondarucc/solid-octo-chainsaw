@@ -43,6 +43,7 @@ model Sub {
   //Audit event refs
   sc_ae  SC_AE?
   srt_ae SRT_AE[]
+  sr_ae  SR_AE[]
   // sssai_ae SSSAI_AE[]
 }
 
@@ -80,8 +81,8 @@ model SPE_AE {
   prevEndDate DateTime
   newEndDate  DateTime
   timestamp   DateTime
-  sc_ae       SC_AE?    @relation(fields: [sc_ae_id], references: [id])
-  sc_ae_id    String?   @unique
+  sc_ae       SC_AE?   @relation(fields: [sc_ae_id], references: [id])
+  sc_ae_id    String?  @unique
 
   @@map("SubPackageExtendedAuditEvent")
 }
@@ -96,12 +97,24 @@ model SRT_AE {
   rewardType             MonetaryRewardType
   timestamp              DateTime
   sc_ae                  SC_AE              @relation(fields: [sc_ae_id], references: [id])
-  sc_ae_id               String             
+  sc_ae_id               String
   rewardAmount           Int
   prevTotalPayableReward Int
   newTotalPayableReward  Int
 
   @@map("SubRewardTriggeredAuditEvent")
+}
+
+model SR_AE {
+  id                     String   @id @default(uuid())
+  sub                    Sub      @relation(fields: [subId], references: [id])
+  subId                  String
+  timestamp              DateTime
+  repaymentAmount        Int
+  prevTotalPayableReward Int
+  newTotalPayableReward  Int
+
+  @@map("SubRepaymentAuditEvent")
 }
 
 // model SSSAI_AE {

@@ -60,7 +60,7 @@ router.get(`/sec${PATH}/:id/audit`, async (req: Request<{ id: string }>, res) =>
           }
         }
       }
-    }), 
+    }),
     type: "SC" as const
   }
 
@@ -78,6 +78,12 @@ router.get(`/sec${PATH}/:id/audit`, async (req: Request<{ id: string }>, res) =>
     include: { sc_ae: { include: { sub: true } } }
   })).map(srtEvent => ({ type: "SRT" as const, ...srtEvent }))
 
+  const sr = (await prisma.sR_AE.findMany({
+    where: {
+      subId
+    }
+  })).map(srEvent => ({ type: "SR" as const, ...srEvent }))
+
   // const sssai = (await prisma.sSSAI_AE.findMany({
   //   where: {
   //     subId
@@ -85,7 +91,7 @@ router.get(`/sec${PATH}/:id/audit`, async (req: Request<{ id: string }>, res) =>
   //   include: { sc_ae: { include: { sub: { include: { attractedBy: true } } } } }
   // })).map(sssaiEvent => ({ type: "SSSAI" as const, ...sssaiEvent }))
 
-  const result: GetSubAuditEventsResponseBody = sortAuditEventsByTimestamp([sc, ...spe, ...srt])
+  const result: GetSubAuditEventsResponseBody = sortAuditEventsByTimestamp([sc, ...spe, ...srt, ...sr])
 
   // const result: GetSubAuditEventsResponseBody = {
   //   sc,
@@ -114,7 +120,7 @@ router.get(`/sec${PATH}/:id/audit`, async (req: Request<{ id: string }>, res) =>
 
 })
 
-router.get(`/sec${PATH}/:id/extend`, async (req: Request<{ id: string }>, res) => {
+router.get(`/sec${PATH}/:id/extend`, async (req, res) => {
   const subId = req.params.id
   await extendSubPackage(subId)
   res.json({})
@@ -159,6 +165,40 @@ router.get(`${PATH}`, async (req, res) => {
   })
 
   res.json(directSubs.attractedSubs)
+})
+
+router.post(`/sec${PATH}/:id/repayment`, async (req, res) => {
+  const subId = req.params.id
+  const {repaymentAmount} = req.body
+
+  const {totalPayableReward: currentTotalPayableReward} = await prisma.sub.findFirstOrThrow({
+    where: {
+      id: subId
+    }
+  })
+
+  await prisma.sub.update(
+    {
+      data: {
+        totalPayableReward: {
+          decrement: repaymentAmount
+        },
+        sr_ae: {
+          create: {
+            timestamp: new Date(),
+            repaymentAmount: repaymentAmount,
+            newTotalPayableReward: currentTotalPayableReward - repaymentAmount,
+            prevTotalPayableReward: currentTotalPayableReward
+          }
+        }
+      },
+      where: {
+        id: subId
+      }
+    }
+  )
+
+  res.json("ok")
 })
 
 export { router as subRouter }
