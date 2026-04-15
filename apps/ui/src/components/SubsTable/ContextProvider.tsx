@@ -4,8 +4,8 @@ import { Form, Modal, type FormInstance, type ModalProps } from "antd"
 
 export type ContextShape = {
   filtersForm: FormInstance<Filters>
-  setFilters: (filters: Filters) => void
-  filters: Filters
+  // setFilters: (filters: Filters) => void
+  // filters: Filters
   closeModal: () => void
   setModalConfig: (config: ModalConfig) => void
 }

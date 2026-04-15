@@ -24,7 +24,7 @@ const router = createBrowserRouter([
     id: "root",
     // shouldRevalidate: () => false,
     loader: async () => {
-      const response = await fetch("/api/auth/me")
+      const response = await fetch("/auth/me")
       console.log("AuthProvider loader");
 
       if (response.ok) {

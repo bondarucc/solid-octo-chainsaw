@@ -136,13 +136,13 @@ function SubLinkingSection() {
       centered
       destroyOnHidden
       items={[
-        {
-          label: "Новый",
-          key: "new",
-          children: (
-            <CreateSubForm />
-          ),
-        },
+        // {
+        //   label: "Новый",
+        //   key: "new",
+        //   children: (
+        //     <CreateSubForm />
+        //   ),
+        // },
         {
           label: "Существующий",
           key: "existing",

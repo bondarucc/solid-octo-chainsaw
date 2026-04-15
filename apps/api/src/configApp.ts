@@ -1,5 +1,5 @@
 import express, { ErrorRequestHandler, json } from "express";
-
+import path from "path"
 import cookieParser from "cookie-parser";
 
 import { adminMiddleware } from "./api/auth/adminWiddleware.js";
@@ -19,9 +19,12 @@ app.use(authRouter)
 app.use("/sec", adminMiddleware)
 app.use(userRouter)
 app.use(subRouter)
-// app.use("/", (req, res) => {
-//   res.json("caught")
-// })
+
+app.use(express.static("dist/ui"))
+
+app.use((req, res) => {
+  res.sendFile("dist/ui/index.html", {root: process.cwd()})
+})
 
 //error handlers
 app.use(function errorLogger(err, _, res, next) {

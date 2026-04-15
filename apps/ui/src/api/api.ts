@@ -10,17 +10,17 @@ async function fetchWrapper(...args: Parameters<typeof fetch>) {
 
 export async function login({login, pwd}: {login: string, pwd: string}) {
   return await fetchWrapper(
-    "api/auth/login",
+    "/auth/login",
     { method: "POST", headers: [["Content-Type", "application/json"]], body: JSON.stringify({ login, pwd }) }
   )
 }
 
 export async function logout() {
-  await fetch("/api/auth/logout", {method: "POST"})
+  await fetch("/auth/logout", {method: "POST"})
 }
 
 export async function getPartnersList(): Promise<GetUsersListResponseBody> {
-  const response: GetUsersListResponseBody = await fetchWrapper("/api/sec/users")
+  const response: GetUsersListResponseBody = await fetchWrapper("/sec/users")
 
   return response
 
@@ -30,21 +30,21 @@ export async function getPartnersList(): Promise<GetUsersListResponseBody> {
 
 export async function getFullSubsList(filter: Filters): Promise<GetSubsListResponseBody> {
   const query = new URLSearchParams(Object.entries(filter).filter(pair => Boolean(pair[1])))
-  return fetchWrapper("/api/sec/subs?" + query.toString())
+  return fetchWrapper("/sec/subs?" + query.toString())
   // console.log(response);
   // return response
 }
 
 export async function getAssignableSubs(): Promise<GetAssignableSubsResponseBody> {
   const response: GetAssignableSubsResponseBody
-    = await fetchWrapper("/api/sec/subs/assignable")
+    = await fetchWrapper("/sec/subs/assignable")
 
   return response
 }
 
 export async function createUser(body: CreateUserRequestBody): Promise<CreateUserResponseBody>{
   const response: CreateUserResponseBody
-    = await fetchWrapper("/api/sec/users", {method: "POST", body: JSON.stringify(body), headers: [["Content-Type", "application/json"]]})
+    = await fetchWrapper("/sec/users", {method: "POST", body: JSON.stringify(body), headers: [["Content-Type", "application/json"]]})
 
 
   return response
@@ -52,27 +52,27 @@ export async function createUser(body: CreateUserRequestBody): Promise<CreateUse
 
 export async function createSub(body: CreateSubRequestBody): Promise<CreateSubResponseBody> {
   const response: CreateSubResponseBody
-   = await fetchWrapper("/api/sec/subs", {method: "POST", body: JSON.stringify(body), headers: [["Content-Type", "application/json"]]})
+   = await fetchWrapper("/sec/subs", {method: "POST", body: JSON.stringify(body), headers: [["Content-Type", "application/json"]]})
 
   return response
 }
 
 export async function getSubAuditEvents(id: string): Promise<GetSubAuditEventsResponseBody> {
   const response: GetSubAuditEventsResponseBody
-    = await fetchWrapper(`/api/sec/subs/${id}/audit`)
+    = await fetchWrapper(`/sec/subs/${id}/audit`)
 
   return response
 }
 
 export async function getMySubs() {
-  return fetchWrapper(`/api/subs`)
+  return fetchWrapper(`/subs`)
 }
 
 export async function extendSubPkgBy1Year(id: string) {
-  return fetchWrapper(`/api/sec/subs/${id}/extend`)
+  return fetchWrapper(`/sec/subs/${id}/extend`)
 }
 
 export async function doRepayment(id: string, amount: number) {
-  await fetchWrapper(`/api/sec/subs/${id}/repayment`, {method: "POST", body: JSON.stringify({repaymentAmount: amount}), headers: [["Content-Type", "application/json"]]})
+  await fetchWrapper(`/sec/subs/${id}/repayment`, {method: "POST", body: JSON.stringify({repaymentAmount: amount}), headers: [["Content-Type", "application/json"]]})
   
 }

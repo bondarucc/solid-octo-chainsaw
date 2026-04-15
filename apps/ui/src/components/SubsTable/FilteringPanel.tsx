@@ -19,7 +19,7 @@ interface FilteringPanelProps {
 export default function FilteringPanel({ onSearch }: FilteringPanelProps) {
   const { filtersForm } = useSubsTableContext()
 
-  const onSearchClick = useCallback<GetProp<FormProps<Filters>, "onFinish">>(v => {
+  const onSearchClick = useCallback<GetProp<FormProps<Filters>, "onFinish">>(() => {
     onSearch()
   }, [onSearch])
 
@@ -94,6 +94,5 @@ function Pill({ label, name }: PillProps) {
         </div>
       </div>
     </Col>
-
   )
 }

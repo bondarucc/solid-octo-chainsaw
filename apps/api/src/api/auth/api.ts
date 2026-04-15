@@ -30,7 +30,7 @@ router.post(`${PATH}/login`, async (req, res) => {
     secure: false, // TODO
     sameSite: 'strict'
   })
-  res.redirect(`/api${PATH}/me`)
+  res.redirect(`${PATH}/me`)
 })
 
 router.post(`${PATH}/logout`, (_, res) => {
