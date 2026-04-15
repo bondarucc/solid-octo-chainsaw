@@ -1,19 +1,45 @@
 import { hashSync } from "bcrypt";
-import createNewSub from "../src/api/sub/createNewSub.ts"
+import prisma from "../src/initDB.js";
 
-async function seed() {
-  await createNewSub({
-    externalId: "superadmin",
-    user: {
-      login: "superadmin",
-      pwd: "superadmin",
-      role: "ADMIN"
+export default async function seed() {
+  const externalId = process.env.ADM_EXT
+  const pwd = process.env.ADM_PWD
+  if (!externalId || !pwd) throw "NO ADM SETUP"
+
+  await prisma.sub.upsert({
+    where: {
+      externalId
     },
-    package: {
-      startDate: "2020-01-01",
-      endDate: "2028-01-01"
-    }
+    create: {
+      externalId,
+      user: {
+        create: {
+          login: externalId,
+          pwd: hashSync(pwd, 10),
+          role: "ADMIN"
+        }
+      },
+      package: {
+        create: {
+          startDate: new Date("2020-01-01"),
+          endDate: new Date("2028-01-01")
+        }
+      }
+    },
+    update: {}
   })
+  // await createNewSub({
+  //   externalId: "superadmin",
+  //   user: {
+  //     login: "superadmin",
+  //     pwd: "superadmin",
+  //     role: "ADMIN"
+  //   },
+  //   package: {
+  //     startDate: "2020-01-01",
+  //     endDate: "2028-01-01"
+  //   }
+  // })
   // await prisma.user.create({
   //   data: {
   //     login: "some_login",
@@ -44,10 +70,10 @@ async function seed() {
   //     }
   //   }
   // })
-  
+
 }
 
 seed().then(() => {
   console.log("SEEDED");
-  
+
 })
