@@ -1,5 +1,5 @@
 import { RequestHandler } from "express";
-import { PrismaClient } from "../../generated/prisma/client.ts";
+import type { PrismaClient } from "../../generated/prisma/client.ts";
 
 export type RouteHandler = [String, RequestHandler]
 

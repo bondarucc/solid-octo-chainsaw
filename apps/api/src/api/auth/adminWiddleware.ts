@@ -1,7 +1,7 @@
 import "dotenv/config" //??
 import { RequestHandler } from "express"
-import { ForbiddenError } from "../../errorDict.ts"
-import { Role } from "../../../generated/prisma/client.ts"
+import { ForbiddenError } from "../../errorDict.js"
+import { Role } from "../../../generated/prisma/client.js"
 
 const ADM = process.env["ADM"]
 if (!ADM) throw "no ADM set up"

@@ -1,5 +1,5 @@
-import "./initDB.ts"
-import { app } from "./configApp.ts";
+import "./initDB.js"
+import { app } from "./configApp.js";
 
 app.listen(3535, () => {
   console.log("Listening");

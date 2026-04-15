@@ -1,6 +1,6 @@
 import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3';
-import { PrismaClient } from "../generated/prisma/client.ts";
-import prismaConfig from "../prisma.config.ts"
+import { PrismaClient } from "../generated/prisma/client.js";
+import prismaConfig from "../prisma.config.js"
 
 const datasourceURL = prismaConfig.datasource?.url
 if (!datasourceURL) throw "Invalid prisma config"

@@ -1,9 +1,9 @@
 import express, { type Request } from "express"
-import { prisma } from "../../initDB.ts"
-import createNewSub from "./createNewSub.ts"
-import { GET_SUBS_ARGS, type GetSubAuditEventsResponseBody, type GetSubsListResponseBody } from "./types.ts"
-import { sortAuditEventsByTimestamp } from "./helpers.ts"
-import { extendSubPackage } from "./extendSubPackage.ts"
+import { prisma } from "../../initDB.js"
+import createNewSub from "./createNewSub.js"
+import { GET_SUBS_ARGS, type GetSubAuditEventsResponseBody, type GetSubsListResponseBody } from "./types.js"
+import { sortAuditEventsByTimestamp } from "./helpers.js"
+import { extendSubPackage } from "./extendSubPackage.js"
 
 const router = express.Router()
 

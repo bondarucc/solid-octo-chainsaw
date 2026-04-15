@@ -3,11 +3,12 @@
   "scripts": {
     "start:dev": "NODE_ENV=dev nodemon",
     "start:test": "NODE_ENV=test nodemon",
-    "start:prod": "NODE_ENV=prod nodemon",
+    "start:prod": "node dist/src/app.js",
     "studio:dev": "NODE_ENV=dev npx prisma studio",
     "studio:test": "NODE_ENV=test npx prisma studio",
     "migrate:dev": "NODE_ENV=dev npx prisma migrate dev",
     "migrate:test": "NODE_ENV=test npx prisma migrate dev",
+    "build": "npx prisma generate && npx prisma migrate dev && npx tsc && cp -rf generated dist",
     "generate": "npx prisma generate",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand"
   },

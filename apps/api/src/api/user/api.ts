@@ -1,5 +1,5 @@
 import express from "express"
-import { prisma } from "../../initDB.ts"
+import { prisma } from "../../initDB.js"
 
 const router = express.Router()
 

@@ -1,10 +1,10 @@
 import { compare, hashSync} from "bcrypt"
 import express from "express"
 import jwt from "jsonwebtoken"
-import { prisma } from "../../initDB.ts"
-import { JWT_SECRET } from "./authMiddleware.ts"
+import { prisma } from "../../initDB.js"
+import { JWT_SECRET } from "./authMiddleware.js"
 
-import { UnauthorizedError } from "../../errorDict.ts"
+import { UnauthorizedError } from "../../errorDict.js"
 // import { isAdmin } from "./adminWiddleware.ts"
 
 const router = express.Router()

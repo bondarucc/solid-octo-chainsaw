@@ -1,10 +1,10 @@
 import { hashSync } from "bcrypt";
 import dayjs from "dayjs";
-import type { SC_AE } from "../../../generated/prisma/client.ts";
-import type { SubGetPayload } from "../../../generated/prisma/models.ts";
-import { prisma } from "../../initDB.ts";
-import type { PrismaTrnClient } from "../types.ts";
-import type { RewardType, CreateSubRequestBody, CreateSubResponseBody } from "./types.ts";
+import type { SC_AE } from "../../../generated/prisma/client.js";
+import type { Prisma } from "../../../generated/prisma/index.js";
+import { prisma } from "../../initDB.js";
+import type { PrismaTrnClient } from "../types.js";
+import type { CreateSubRequestBody, CreateSubResponseBody, RewardType } from "./types.js";
 
 export default async function createNewSub(sub: CreateSubRequestBody): Promise<CreateSubResponseBody> {
   const { package: pkg, attractor, user, ...restSub } = sub
@@ -87,7 +87,7 @@ export default async function createNewSub(sub: CreateSubRequestBody): Promise<C
 function factory(
   { attractor, sc_ae, trn }:
     {
-      attractor: SubGetPayload<{ select: { package: true, id: true, totalPayableReward: true } }>
+      attractor: Prisma.SubGetPayload<{ select: { package: true, id: true, totalPayableReward: true } }>
       sc_ae: SC_AE
       trn: PrismaTrnClient
     }
@@ -165,7 +165,7 @@ async function doRewardAttractor(
   { attractor, rewardType, trn, sc_ae }:
     {
       rewardType: RewardType
-      attractor: SubGetPayload<{ select: { attractedSubs: true, package: true, id: true, totalPayableReward: true } }>
+      attractor: Prisma.SubGetPayload<{ select: { attractedSubs: true, package: true, id: true, totalPayableReward: true } }>
       trn: PrismaTrnClient
       sc_ae: SC_AE
     }

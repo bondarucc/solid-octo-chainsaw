@@ -1,6 +1,6 @@
 // import { hashSync } from "bcrypt";
 // import { Sub } from "../../generated/prisma/client.ts";
-import { CreateSubRequestBody } from "../api/sub/types.ts";
+// import { CreateSubRequestBody } from "../api/sub/types.ts";
 // import {prisma} from "../initDB.ts"
 
 

@@ -2,13 +2,13 @@ import express, { ErrorRequestHandler, json } from "express";
 
 import cookieParser from "cookie-parser";
 
-import { adminMiddleware } from "./api/auth/adminWiddleware.ts";
-import { authRouter } from "./api/auth/api.ts";
-import { authMiddleware } from "./api/auth/authMiddleware.ts";
-import { InternalError } from "./errorDict.ts";
-import { app } from "./initApp.ts";
-import { userRouter } from "./api/user/api.ts";
-import { subRouter } from "./api/sub/api.ts";
+import { adminMiddleware } from "./api/auth/adminWiddleware.js";
+import { authRouter } from "./api/auth/api.js";
+import { authMiddleware } from "./api/auth/authMiddleware.js";
+import { InternalError } from "./errorDict.js";
+import { app } from "./initApp.js";
+import { userRouter } from "./api/user/api.js";
+import { subRouter } from "./api/sub/api.js";
 
 export {app}
 

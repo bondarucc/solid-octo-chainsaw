@@ -1,8 +1,8 @@
-import { Package, Sub, User } from "../../../generated/prisma/client.ts";
-import type { PackageGetPayload, SubGetPayload, UserGetPayload } from "../../../generated/prisma/models.ts";
+import type { Package, Sub, User } from "../../../generated/prisma/client.ts";
+import type { Prisma } from "../../../generated/prisma/index.js";
 
 
-export type GetUsersListResponseBody = UserGetPayload<{
+export type GetUsersListResponseBody = Prisma.UserGetPayload<{
   omit: {
     pwd: true
   },
@@ -12,7 +12,7 @@ export type GetUsersListResponseBody = UserGetPayload<{
 }>[]
 
 
-export type CreateUserRequestBody = UserGetPayload<{
+export type CreateUserRequestBody = Prisma.UserGetPayload<{
   omit: {
     id: true,
     subId: true
@@ -23,7 +23,7 @@ export type CreateUserRequestBody = UserGetPayload<{
       sub?: never
     } | {
       subId?: never,
-      sub: SubGetPayload<{
+      sub: Prisma.SubGetPayload<{
         omit: {
           id: true,
           totalPayableReward: true,
@@ -39,7 +39,7 @@ export type CreateUserRequestBody = UserGetPayload<{
     }
   )
 
-export type CreateUserResponseBody = UserGetPayload<{
+export type CreateUserResponseBody = Prisma.UserGetPayload<{
   omit: {
     pwd: true
   }

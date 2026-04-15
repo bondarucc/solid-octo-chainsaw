@@ -1,12 +1,14 @@
-import { type User, type Package, type Sub, SC_AE } from "../../../generated/prisma/client.ts";
-import { PackageCreateInput, SC_AEGetPayload, SPE_AEGetPayload, SR_AEGetPayload, SRT_AEGetPayload } from "../../../generated/prisma/models.ts";
-import { SubCreateInput, type SubDefaultArgs, type SubGetPayload } from "../../../generated/prisma/models/Sub.ts";
+import type { User, Package, Sub, SC_AE } from "../../../generated/prisma/client.ts";
+import type { } from "../../../generated/prisma/index.js";
+import type { Prisma } from "../../../generated/prisma/index.js";
+
+
 
 export type CreateSubRequestBody = Pick<
-  SubCreateInput,
+  Prisma.SubCreateInput,
   "epg" | "externalId" | "login" | "pwd" | "m3uPlaylist" | "media" | "note" | "publicKey"
 > & {
-  package: Pick<PackageCreateInput, "pkgType" | "paymentAmount" | "paymentCurr" | "region"> & {
+  package: Pick<Prisma.PackageCreateInput, "pkgType" | "paymentAmount" | "paymentCurr" | "region"> & {
     startDate: string,
     endDate: string,
     paymentDate?: string
@@ -28,7 +30,7 @@ export const CREATE_SUB_ARGS = {
   include: {
     package: true
   },
-} satisfies SubDefaultArgs
+} satisfies Prisma.SubDefaultArgs
 
 export type CreateSubResponseBody = Sub
 
@@ -59,11 +61,11 @@ export const GET_SUBS_ARGS = {
       }
     }
   }
-} satisfies SubDefaultArgs
+} satisfies Prisma.SubDefaultArgs
 
-export type GetSubsListResponseBody = SubGetPayload<typeof GET_SUBS_ARGS>[]
+export type GetSubsListResponseBody = Prisma.SubGetPayload<typeof GET_SUBS_ARGS>[]
 
-export type GetAssignableSubsResponseBody = SubGetPayload<{}>[]
+export type GetAssignableSubsResponseBody = Prisma.SubGetPayload<{}>[]
 
 // export type GetSubAuditEventsResponseBody = {
 //   sc: SC_AE
@@ -74,6 +76,6 @@ export type GetAssignableSubsResponseBody = SubGetPayload<{}>[]
 
 export type GetSubAuditEventsResponseBody = (
   | { type: "SC" } & SC_AE
-  | { type: "SPE" } & SPE_AEGetPayload<{ include: { sc_ae: { include: { sub: true } } } }>
-  | { type: "SR" } & SR_AEGetPayload<{}>
-  | { type: "SRT" } & SRT_AEGetPayload<{ include: { sc_ae: { include: { sub: true } } } }>)[]
+  | { type: "SPE" } & Prisma.SPE_AEGetPayload<{ include: { sc_ae: { include: { sub: true } } } }>
+  | { type: "SR" } & Prisma.SR_AEGetPayload<{}>
+  | { type: "SRT" } & Prisma.SRT_AEGetPayload<{ include: { sc_ae: { include: { sub: true } } } }>)[]

@@ -1,8 +1,9 @@
 import dayjs from "dayjs";
-import { SC_AE, type Sub } from "../../../generated/prisma/client.ts";
-import { prisma } from "../../initDB.ts"
-import { SC_AEGetPayload, SubGetPayload } from "../../../generated/prisma/models.ts";
-import { PrismaTrnClient } from "../types.ts";
+import { SC_AE, type Sub } from "../../../generated/prisma/client.js";
+import { prisma } from "../../initDB.js"
+import { PrismaTrnClient } from "../types.js";
+import type { Prisma } from "../../../generated/prisma/index.js";
+
 
 
 
@@ -50,7 +51,7 @@ export async function extendSubPackage(id: Sub["id"]) {
 
 }
 
-async function processAttractor({ sc_ae, trn, attractor }: { sc_ae: SC_AE, trn: PrismaTrnClient, attractor: SubGetPayload<{ select: { id: true, totalPayableReward: true } }> }) {
+async function processAttractor({ sc_ae, trn, attractor }: { sc_ae: SC_AE, trn: PrismaTrnClient, attractor: Prisma.SubGetPayload<{ select: { id: true, totalPayableReward: true } }> }) {
   const { attractorTier } = sc_ae
   const { id: attractorId, totalPayableReward: prevTotalPayableReward } = attractor
   if (attractorTier == null || attractorTier <= 5) return
