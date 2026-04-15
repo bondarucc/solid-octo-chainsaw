@@ -1,41 +1,42 @@
 import { Col, DatePicker, Form, InputNumber, Row, Select, Space, type SelectProps } from "antd"
-import { Currency, PackageType, Region } from "../../../api/generated/prisma/browser"
+import { useWatch } from "antd/es/form/Form"
+import useFormInstance from "antd/es/form/hooks/useFormInstance"
 import type { Dayjs } from "dayjs"
 import dayjs from "dayjs"
-import useFormInstance from "antd/es/form/hooks/useFormInstance"
 import { useCallback } from "react"
-import { useWatch } from "antd/es/form/Form"
 
 const pkgTypeOptions: SelectProps["options"] = [
   {
     label: "4K",
-    value: PackageType.PREMIUM
+    value: "PREMIUM" as const
+    // value: PackageType.PREMIUM
   },
   {
     label: "HD",
-    value: PackageType.REGULAR
+    value: "REGULAR" as const
+    // value: PackageType.REGULAR
   }
 ]
 
 const currOptions: SelectProps["options"] = [
   {
-    label: Currency.EUR,
-    value: Currency.EUR
+    label: "EUR",
+    value: "EUR"
   },
   {
-    label: Currency.USD,
-    value: Currency.USD
+    label: "USD",
+    value: "USD"
   }
 ]
 
 const regionOptions: SelectProps["options"] = [
   {
-    label: Region.EU,
-    value: Region.EU
+    label: "EU",
+    value: "EU"
   },
   {
     label: "USA/CANADA",
-    value: Region.USA_CANADA
+    value: "USA_CANADA"
   }
 ]
 
@@ -45,28 +46,28 @@ export default function CreatePkgForm({ prefix }: { prefix: string[] }) {
   const form = useFormInstance()
   const currentRegion = useWatch([...prefix, "region"])
   const regionOnChange = useCallback<NonNullable<SelectProps["onChange"]>>(value => {
-    if (value === Region.EU) {
-      form.setFieldValue([...prefix, "pkgType"], PackageType.PREMIUM)
+    if (value === "EU") {
+      form.setFieldValue([...prefix, "pkgType"], "PREMIUM")
       form.setFieldValue([...prefix, "paymentAmount"], 120)
-      form.setFieldValue([...prefix, "paymentCurr"], Currency.EUR)
+      form.setFieldValue([...prefix, "paymentCurr"], "EUR")
 
     } else {
       form.resetFields([[...prefix, "pkgType"], [...prefix, "paymentAmount"]])
-      form.setFieldValue([...prefix, "paymentCurr"], Currency.USD)
+      form.setFieldValue([...prefix, "paymentCurr"], "USD")
     }
 
   }, [form])
 
   const onPkgTypeChange = useCallback<NonNullable<SelectProps["onChange"]>>((value) => {
     let defaultPaymentAmount: number
-    if (value === PackageType.PREMIUM) {
-      defaultPaymentAmount = currentRegion === Region.EU ? 120 : 180
+    if (value === "PREMIUM") {
+      defaultPaymentAmount = currentRegion === "EU" ? 120 : 180
     } else defaultPaymentAmount = 140
     form.setFieldValue([...prefix, "paymentAmount"], defaultPaymentAmount)
 
   }, [form, currentRegion])
 
-  const pkgTypeDisabled = !currentRegion || currentRegion === Region.EU
+  const pkgTypeDisabled = !currentRegion || currentRegion === "EU"
 
   return (
     <>

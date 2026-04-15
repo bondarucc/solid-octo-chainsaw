@@ -1,14 +1,13 @@
-import { Button, Col, Divider, Flex, Form, Input, Radio, Row, Select, Typography, type FormProps, type GetProp, type SelectProps } from "antd"
-import { useCallback, useEffect, useMemo, useState } from "react"
-import { Currency, Role } from "../../../api/generated/prisma/browser.ts"
-import { createSub, getFullSubsList } from "../api/api"
+import { UserAddOutlined, UserDeleteOutlined } from "@ant-design/icons"
+import { Button, Col, Divider, Flex, Form, Input, Row, Typography, type FormProps } from "antd"
+import { useCallback, useState } from "react"
+import type { CreateSubRequestBody } from "../../../api/src/api/sub/types.ts"
+import { createSub } from "../api/api"
+import AttractorSelector from "./AttractorSelector.tsx"
 import CreatePkgForm from "./CreatePkgForm"
 import CreateUserForm from "./CreateUserForm"
 import useSubsTableContext from "./SubsTable/hooks/useSubsTableContext.ts"
 import type { CreateSubFormShape } from "./types.ts"
-import type { CreateSubRequestBody, RewardType } from "../../../api/src/api/sub/types.ts"
-import { UserAddOutlined, UserDeleteOutlined } from "@ant-design/icons"
-import AttractorSelector from "./AttractorSelector.tsx"
 
 function formValuesToRequestBody(formValues: CreateSubFormShape): CreateSubRequestBody {
 
@@ -111,10 +110,10 @@ export default function CreateSubForm({ onSuccess }: { onSuccess: () => void }) 
         }}
         initialValues={{
           package: {
-            paymentCurr: Currency.EUR
+            paymentCurr: "EUR"
           },
           user: {
-            role: Role.PARTNER
+            role: "PARTNER"
           },
           attractor: {
             rewardType: "MONETARY"

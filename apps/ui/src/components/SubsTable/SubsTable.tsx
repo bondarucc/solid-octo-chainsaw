@@ -8,13 +8,12 @@ import CreateSubForm from "../CreateSubForm.tsx"
 import { AuditModalContent } from "./AuditModalContent.tsx"
 import FilteringPanel from "./FilteringPanel.tsx"
 import useSubsTableContext from "./hooks/useSubsTableContext.ts"
-import { Role } from "../../../../api/generated/prisma/enums.ts"
 import RepaymentModalContent from "./RepaymentModalContent.tsx"
 
 const TRNS = {
  ROLE: {
-  [Role.ADMIN]: "Админ",
-  [Role.PARTNER]: "Партнер"
+  ["ADMIN"]: "Админ",
+  ["PARTNER"]: "Партнер"
  } as const
 }
 
@@ -110,6 +109,7 @@ export default function SubsTable() {
       {
         title: "Роль",
         key: "role",
+        /* tslint:disable */
         render: (sub: SubItem) => sub.user?.role ? TRNS.ROLE[sub.user.role] : "Абонент"
       },
       {

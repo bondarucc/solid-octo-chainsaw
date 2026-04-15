@@ -1,5 +1,5 @@
 import { Button, Divider, Flex, InputNumber, type GetProp } from "antd";
-import type { Sub } from "../../../../api/generated/prisma/browser";
+import type { Sub } from "../../../../api/generated/prisma/index";
 import useSubsTableContext from "./hooks/useSubsTableContext";
 import { useCallback, useRef, useState } from "react";
 import { doRepayment } from "../../api/api";

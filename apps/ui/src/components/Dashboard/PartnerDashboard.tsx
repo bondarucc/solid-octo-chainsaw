@@ -2,7 +2,7 @@ import { Descriptions, Table, type GetProp } from "antd"
 import dayjs from "dayjs"
 import { useEffect, useState } from "react"
 import { useRouteLoaderData } from "react-router"
-import type { Package, Sub } from "../../../../api/generated/prisma/browser"
+import type { Package, Sub } from "../../../../api/generated/prisma/index"
 import { getMySubs } from "../../api/api"
 import type { AuthContextShape } from "../AuthProvider/types"
 

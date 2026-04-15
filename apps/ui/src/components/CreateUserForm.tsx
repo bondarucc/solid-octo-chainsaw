@@ -1,5 +1,5 @@
 import { Col, Form, Input, Row, Select } from "antd";
-import { Role } from "../../../api/generated/prisma/browser.ts";
+import { Role } from "../../../api/generated/prisma/index";
 import type { CreateSubFormShape } from "./types.ts";
 
 export default function CreateUserForm({ prefix }: { prefix: string[] }) {
@@ -27,8 +27,8 @@ export default function CreateUserForm({ prefix }: { prefix: string[] }) {
 
             <Select
               options={[
-                { value: Role.ADMIN, label: "Админ" },
-                { value: Role.PARTNER, label: "Партнер" }
+                { value: "ADMIN", label: "Админ" },
+                { value: "PARTNER", label: "Партнер" }
               ]}
             />
           </Form.Item>

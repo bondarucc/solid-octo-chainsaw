@@ -1,4 +1,4 @@
-import type { Package, Sub, User } from "../../../api/generated/prisma/browser.ts"
+import type { Package, Sub, User } from "../../../api/generated/prisma/index"
 import type { RewardType } from "../../../api/src/api/sub/types.ts"
 import type { RecursivePartial, ReplaceDatesWithStrings } from "../helpers/types.ts"
 
