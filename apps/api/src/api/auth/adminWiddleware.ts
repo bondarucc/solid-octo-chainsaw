@@ -3,9 +3,6 @@ import { RequestHandler } from "express"
 import { ForbiddenError } from "../../errorDict.js"
 import { Role } from "../../../generated/prisma/client.js"
 
-const ADM = process.env["ADM"]
-if (!ADM) throw "no ADM set up"
-
 export const adminMiddleware: RequestHandler = (_, res, next) => {
   const {role} = res.locals.userData
 
@@ -14,7 +11,3 @@ export const adminMiddleware: RequestHandler = (_, res, next) => {
   }
   return next()
 }
-
-// export function isAdmin(id: string) {
-//   return id === ADM
-// }
