@@ -12,7 +12,7 @@ if (!secret) throw "no jwt secret set up"
 
 export const authMiddleware: Handler = async (req, res, next) => {
   
-  if (req.path === "/auth/login" || req.path === "/login" || req.path.startsWith("/assets")) return next()
+  if (req.originalUrl === "/api/auth/login") return next()
   
   const token = req.cookies.auth_token
   

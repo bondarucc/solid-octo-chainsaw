@@ -1,18 +1,19 @@
+import { UserOutlined } from "@ant-design/icons"
 import { Avatar, Button, Divider, Flex, Typography } from "antd"
 import { useCallback } from "react"
-import { useNavigate, useRouteLoaderData } from "react-router"
+import { useRevalidator } from "react-router"
 import { logout } from "../api/api"
-import type { AuthContextShape } from "./AuthProvider/types"
-import { UserOutlined } from "@ant-design/icons"
+import useUserData from "../hooks/useUserData"
 
 function TopBar() {
-  const navigate = useNavigate()
+  const {revalidate} = useRevalidator();
   const logoutOnClick = useCallback(async () => {
     await logout()
-    navigate("/login")
-  }, [navigate])
+    // navigate("/login")
+    revalidate()
+  }, [revalidate])
 
-  const userData = useRouteLoaderData<AuthContextShape>("root")
+  const {userData} = useUserData()
 
   return (
     <div style={{ backgroundColor: "rgb(248, 236, 222)", height: "50px", paddingInline: "12px" }}>

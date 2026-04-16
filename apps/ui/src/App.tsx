@@ -1,15 +1,18 @@
 // import './App.css'
 
-import { Button, Flex, Layout } from "antd"
+import { Button, Flex, Layout, Modal } from "antd"
 import AuthProvider, { useAuthCtx } from "./components/AuthProvider/AuthProvider"
 import DashboardRouter from "./components/Dashboard/DashboardRouter"
 import { Suspense, useCallback, useEffect, type PropsWithChildren } from "react"
-import { logout, login } from "./api/api"
-import { Await, createBrowserRouter, Link, NavLink, Outlet, redirect, useLoaderData, useNavigate, useNavigation, useRouteLoaderData, } from "react-router";
+import { logout, login, getMe } from "./api/api"
+import { Await, createBrowserRouter, Link, NavLink, Outlet, redirect, useLoaderData, useNavigate, useNavigation, useRouteError, useRouteLoaderData, } from "react-router";
 import { RouterProvider } from "react-router/dom";
 import LoginPage from "./components/AuthProvider/LoginPage"
 import type { AuthContextShape } from "./components/AuthProvider/types"
 import TopBar from "./components/TopBar"
+import { ReloadOutlined } from "@ant-design/icons"
+import useUserData from "./hooks/useUserData"
+
 
 
 const router = createBrowserRouter([
@@ -22,17 +25,10 @@ const router = createBrowserRouter([
     //   }
     // ]
     id: "root",
+    errorElement: <ErrorBoundary />,
     // shouldRevalidate: () => false,
-    loader: async () => {
-      const response = await fetch("/auth/me")
-      console.log("AuthProvider loader");
-
-      if (response.ok) {
-        const { login, role, sub, externalId } = await response.json()
-        return { login, role, externalId, totalPayableReward: sub.totalPayableReward } satisfies AuthContextShape
-
-      }
-
+    loader: async () => {      
+      return await getMe()
     },
     element: <Outlet />,
     children: [
@@ -51,20 +47,19 @@ const router = createBrowserRouter([
         }
       },
       {
-        // path: "dashboard",
         element: (
-          <>
+          <AuthProtectedRoute>
             <TopBar />
             <div style={{ paddingInline: "12px", paddingTop: "12px", width: "100%", boxSizing: "border-box", overflow: "hidden" }}>
-              <AuthProtectedRoute />
+              <Outlet />
             </div>
-          </>
+          </AuthProtectedRoute>
         ),
         children: [
           {
             path: "dashboard",
             element: <DashboardRouter />
-          }
+          },
         ]
       },
     ]
@@ -72,16 +67,16 @@ const router = createBrowserRouter([
 
 ])
 
-function AuthProtectedRoute() {
-  const userData = useRouteLoaderData<AuthContextShape>("root")
-  const navigate = useNavigate()
+function AuthProtectedRoute({children}: PropsWithChildren) {
+  const {userData, error} = useUserData()
+  const navigate = useNavigate()  
 
   useEffect(() => {
-    if (!userData) navigate("/login")
+    if (!userData || error) navigate("/login")
   }, [userData, navigate])
 
 
-  return <Outlet />
+  return children
 }
 
 
@@ -91,3 +86,38 @@ function App() {
 
 export default App
 
+function ErrorBoundary() {
+  const error = useRouteError()
+  console.error(error)
+  return (
+    <div style={{ height: "100vh", display: "flex", flexFlow: "column nowrap", justifyContent: "center" }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+
+        }}
+      >
+        <div
+          style={{
+            boxShadow: "0 0 8px 4px rgba(0,0,0,0.12)",
+            borderRadius: "8px",
+            textAlign: "center",
+            padding: "24px",
+          }}
+        >
+
+          <span>Что-то пошло не так</span>
+          <br />
+          <Link to="/dashboard">
+            <Button icon={<ReloadOutlined />} style={{ marginTop: 24 }}>
+              Перезагрузить
+            </Button>
+
+          </Link>
+        </div>
+      </div>
+
+    </div>
+  )
+}

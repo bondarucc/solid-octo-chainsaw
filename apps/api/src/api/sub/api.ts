@@ -4,13 +4,21 @@ import createNewSub from "./createNewSub.js"
 import { GET_SUBS_ARGS, type GetSubAuditEventsResponseBody, type GetSubsListResponseBody } from "./types.js"
 import { sortAuditEventsByTimestamp } from "./helpers.js"
 import { extendSubPackage } from "./extendSubPackage.js"
+import { adminMiddleware } from "../auth/adminWiddleware.js"
 
 const router = express.Router()
 
 const PATH = "/subs"
 
+const innerRouter = express.Router()
+const secureInnerRouter = express.Router()
+
+router.use(PATH, innerRouter)
+router.use(PATH, adminMiddleware, secureInnerRouter)
+
+
 // Get all subs
-router.get(`/sec${PATH}`, async (req: Request<{}, {}, {}, { externalId: string, attractorId: string, login: string }>, res) => {
+secureInnerRouter.get(`/full`, async (req: Request<{}, {}, {}, { externalId: string, attractorId: string, login: string }>, res) => {
   const { externalId, attractorId, login } = req.query
 
   const result: GetSubsListResponseBody = await prisma.sub.findMany({
@@ -29,7 +37,7 @@ router.get(`/sec${PATH}`, async (req: Request<{}, {}, {}, { externalId: string, 
 })
 
 //Get subs assignable to a user
-router.get(`/sec${PATH}/assignable`, async (_, res) => {
+secureInnerRouter.get(`/assignable`, async (_, res) => {
   const assignableSubs = await prisma.sub.findMany({
     where: {
       user: null
@@ -39,13 +47,13 @@ router.get(`/sec${PATH}/assignable`, async (_, res) => {
 })
 
 // Create new Sub
-router.post(`/sec${PATH}`, async (req, res) => {
+secureInnerRouter.post("/", async (req, res) => {
   const newSub = await createNewSub(req.body)
   res.json(newSub)
 })
 
 // Get sub audit events
-router.get(`/sec${PATH}/:id/audit`, async (req: Request<{ id: string }>, res) => {
+secureInnerRouter.get("/:id/audit", async (req: Request<{ id: string }>, res) => {
   const subId = req.params.id
 
   const sc = {
@@ -120,13 +128,13 @@ router.get(`/sec${PATH}/:id/audit`, async (req: Request<{ id: string }>, res) =>
 
 })
 
-router.get(`/sec${PATH}/:id/extend`, async (req, res) => {
+secureInnerRouter.get("/:id/extend", async (req, res) => {
   const subId = req.params.id
   await extendSubPackage(subId)
   res.json({})
 })
 
-router.get(`${PATH}/:id`, async (req, res) => {
+secureInnerRouter.get("/:id", async (req, res) => {
   const sub = await prisma.sub.findFirst({
     where: {
       id: req.params.id
@@ -136,7 +144,7 @@ router.get(`${PATH}/:id`, async (req, res) => {
 })
 
 //Get my subs
-router.get(`${PATH}`, async (req, res) => {
+innerRouter.get(`/mySubs`, async (req, res) => {
   const { id } = res.locals.userData.sub
   // console.log(externalId);
 
@@ -167,7 +175,7 @@ router.get(`${PATH}`, async (req, res) => {
   res.json(directSubs.attractedSubs)
 })
 
-router.post(`/sec${PATH}/:id/repayment`, async (req, res) => {
+secureInnerRouter.post(`/:id/repayment`, async (req, res) => {
   const subId = req.params.id
   const {repaymentAmount} = req.body
 

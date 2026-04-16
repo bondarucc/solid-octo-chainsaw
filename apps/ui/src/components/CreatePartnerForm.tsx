@@ -1,9 +1,7 @@
 import { Col, Form, Input, Row, Select, Tabs, type SelectProps } from "antd";
 import { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from "react";
 import type { CreateUserRequestBody } from "../../../api/src/api/user/types.ts";
-import { Currency, Role } from "../../../api/generated/prisma/index";
 import { createUser, getAssignableSubs } from "../api/api.ts";
-import CreateSubForm from "./CreateSubForm.tsx";
 
 type FormShape = Omit<CreateUserRequestBody, "sub" | "subId"> & (
   | {

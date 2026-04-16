@@ -1,4 +1,4 @@
-import { compare, hashSync} from "bcrypt"
+import { compare } from "bcrypt"
 import express from "express"
 import jwt from "jsonwebtoken"
 import { prisma } from "../../initDB.js"
@@ -8,11 +8,13 @@ import { UnauthorizedError } from "../../errorDict.js"
 // import { isAdmin } from "./adminWiddleware.ts"
 
 const router = express.Router()
+const innerRouter = express.Router()
 
 const PATH = "/auth"
+router.use(PATH, innerRouter)
 
 // console.log(hashSync("some_pwd", 10));
-router.post(`${PATH}/login`, async (req, res) => {
+innerRouter.post(`/login`, async (req, res) => {
   const { login, pwd } = req.body
   const user = await prisma.user.findFirst({
     where: {
@@ -30,15 +32,15 @@ router.post(`${PATH}/login`, async (req, res) => {
     secure: false, // TODO
     sameSite: 'strict'
   })
-  res.redirect(`${PATH}/me`)
+  res.redirect(`${req.baseUrl}/me`)
 })
 
-router.post(`${PATH}/logout`, (_, res) => {
+innerRouter.post(`/logout`, (_, res) => {
   res.clearCookie('auth_token')
-  res.json()
+  res.json("ok")
 })
 
-router.get(`${PATH}/me`, async (_, res) => {
+innerRouter.get(`/me`, async (_, res) => {
   res.json({
     ...res.locals.userData,
     // isAdm: isAdmin(res.locals.userId)

@@ -1,6 +1,5 @@
 import { lazy } from "react"
-import { useRouteLoaderData } from "react-router"
-import type { AuthContextShape } from "../AuthProvider/types"
+import useUserData from "../../hooks/useUserData"
 
 const LazyAdminDashboard = lazy(async () => {
   return import("./AdminDashboard")
@@ -10,8 +9,9 @@ const LazyPartnerDashboard = lazy(async () => {
 })
 
 function DashboardRouter() {
-  const userData = useRouteLoaderData<AuthContextShape>("root")
-  return userData?.role === "ADMIN"
+  const {userData} = useUserData()
+  if (!userData) return
+  return userData.role === "ADMIN"
     ? <LazyAdminDashboard />
     : <LazyPartnerDashboard />
 }

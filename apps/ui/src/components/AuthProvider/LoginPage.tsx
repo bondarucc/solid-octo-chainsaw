@@ -2,10 +2,11 @@ import { Form, useActionData, useNavigate, useRouteLoaderData } from "react-rout
 import "./styles.css"
 import type { AuthContextShape } from "./types"
 import { useEffect } from "react"
+import useUserData from "../../hooks/useUserData"
 
 function LoginPage() {
   const message = useActionData<string>()
-  const userData = useRouteLoaderData<AuthContextShape>("root")
+  const {userData} = useUserData()
   const navigate = useNavigate()
 
   useEffect(() => {

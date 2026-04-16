@@ -1,5 +1,4 @@
 import { Col, Form, Input, Row, Select } from "antd";
-import { Role } from "../../../api/generated/prisma/index";
 import type { CreateSubFormShape } from "./types.ts";
 
 export default function CreateUserForm({ prefix }: { prefix: string[] }) {

@@ -12,13 +12,18 @@ import { subRouter } from "./api/sub/api.js";
 
 export {app}
 
+const mainRouter = express.Router()
+
+
 app.use(express.json())
 app.use(cookieParser())
-app.use(authMiddleware)
-app.use(authRouter)
-app.use("/sec", adminMiddleware)
-app.use(userRouter)
-app.use(subRouter)
+// mainRouter.use("/api")
+// app.use(authMiddleware)
+
+app.use("/api", authMiddleware, authRouter, subRouter)
+// app.use("/sec", adminMiddleware)
+// app.use(userRouter)
+// app.use(subRouter)
 
 app.use(express.static("dist/ui"))
 
