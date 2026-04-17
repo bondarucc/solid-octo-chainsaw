@@ -101,6 +101,7 @@ model SRT_AE {
   rewardAmount               Int
   prevTotalPayableReward     Int
   newTotalPayableReward      Int
+  highestTierReached         Boolean?
 
   @@map("SubRewardTriggeredAuditEvent")
 }

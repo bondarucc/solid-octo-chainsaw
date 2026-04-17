@@ -34,7 +34,7 @@ export async function extendSubPackage(id: Sub["id"]) {
         sub: {
           select: {
             attractedBy: {
-              select: { id: true, totalPayableReward: true, customMonetaryRewardAmount: true }
+              select: { id: true, totalPayableReward: true, customMonetaryRewardAmount: true, attractedSubs: true }
             },
             sc_ae: true
           }
@@ -51,11 +51,17 @@ export async function extendSubPackage(id: Sub["id"]) {
 
 }
 
-async function processAttractor({ sc_ae, trn, attractor }: { sc_ae: SC_AE, trn: PrismaTrnClient, attractor: Prisma.SubGetPayload<{ select: { id: true, totalPayableReward: true, customMonetaryRewardAmount: true } }> }) {
+async function processAttractor({ sc_ae, trn, attractor }: { sc_ae: SC_AE, trn: PrismaTrnClient, attractor: Prisma.SubGetPayload<{ select: { id: true, totalPayableReward: true, customMonetaryRewardAmount: true, attractedSubs: true } }> }) {
   const { attractorTier } = sc_ae
-  const { id: attractorId, totalPayableReward: prevTotalPayableReward, customMonetaryRewardAmount } = attractor
-  if (attractorTier == null || attractorTier <= 5) return
-  const rewardAmount = customMonetaryRewardAmount ?? Math.min(25, Math.ceil(attractorTier / 5) * 5)
+  const { id: attractorId, totalPayableReward: prevTotalPayableReward, customMonetaryRewardAmount, attractedSubs } = attractor
+  const directSubsAmount = attractedSubs.length
+  const highestTierReached = directSubsAmount > 25
+  if (attractorTier == null || (attractorTier <= 5 && !highestTierReached)) return
+  const rewardAmount = customMonetaryRewardAmount !== null
+    ? customMonetaryRewardAmount
+    : highestTierReached
+      ? 25
+      : Math.min(25, Math.ceil(attractorTier / 5) * 5)
 
   await trn.sub.update({
     data: {
@@ -75,6 +81,7 @@ async function processAttractor({ sc_ae, trn, attractor }: { sc_ae: SC_AE, trn: 
       newTotalPayableReward: prevTotalPayableReward + rewardAmount,
       rewardType: "SUB_EXT",
       customMonetaryRewardAmount,
+      highestTierReached,
       timestamp: new Date(),
       sub: {
         connect: {
