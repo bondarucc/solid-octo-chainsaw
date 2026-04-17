@@ -44,6 +44,7 @@ model Sub {
   sc_ae  SC_AE?
   srt_ae SRT_AE[]
   sr_ae  SR_AE[]
+  su_ae  SU_AE[]
   // sssai_ae SSSAI_AE[]
 }
 
@@ -117,18 +118,16 @@ model SR_AE {
   @@map("SubRepaymentAuditEvent")
 }
 
-// model SSSAI_AE {
-//   id                      String   @id @default(uuid())
-//   sc_ae                   SC_AE    @relation(fields: [sc_ae_id], references: [id])
-//   sc_ae_id                String
-//   timestamp               DateTime
-//   prevSecondarySubsAmount Int
-//   newSecondarySubsAmount  Int
-//   sub                     Sub      @relation(fields: [subId], references: [id])
-//   subId                   String
+model SU_AE {
+  id        String   @id @default(uuid())
+  sub       Sub      @relation(fields: [subId], references: [id])
+  subId     String
+  reason    String?
+  timestamp DateTime
+  diff      String
 
-//   @@map("SubSecondarySubsAmountIncrementedAuditEvent")
-// }
+  @@map("SubUpdatedtAuditEvent")
+}
 
 enum MonetaryRewardType {
   SUB_EXT

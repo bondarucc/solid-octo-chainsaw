@@ -4,11 +4,12 @@ import dayjs from "dayjs"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { extendSubPkgBy1Year, getFullSubsList } from "../../api/api.ts"
 import { ClickGuard } from "../../helpers/ClickGuard.tsx"
-import CreateSubForm from "../CreateSubForm.tsx"
+import CreateSubModalContent from "../CreateSubModalContent.tsx"
 import { AuditModalContent } from "./AuditModalContent.tsx"
 import FilteringPanel from "./FilteringPanel.tsx"
 import useSubsTableContext from "./hooks/useSubsTableContext.ts"
 import RepaymentModalContent from "./RepaymentModalContent.tsx"
+import ViewEditSubModalContent from "../ViewEditSubModalContent.tsx"
 
 const TRNS = {
  ROLE: {
@@ -155,7 +156,7 @@ export default function SubsTable() {
               setModalConfig({
                 open: true,
                 title: "Новый абонент",
-                children: <CreateSubForm onSuccess={onCreateSuccessful} />
+                children: <CreateSubModalContent onSuccess={onCreateSuccessful} />
               })
             }
           />
@@ -186,6 +187,18 @@ export default function SubsTable() {
         pagination={{
 
         }}
+        onRow={(sub) => ({
+          onClick: () => {
+            setModalConfig({
+              open: true,
+              // title: sub.externalId,
+              children: <ViewEditSubModalContent refresh={getAllSubs} subExternalId={sub.externalId} />,
+              closable: false
+              
+            })
+            
+          },
+        })}
         rowKey={sub => sub.externalId}
         dataSource={allSubs}
         columns={columns}

@@ -1,8 +1,9 @@
-import { Tag, Timeline, type TimelineProps } from "antd"
+import { Collapse, Descriptions, Divider, Tag, Timeline, type TimelineProps } from "antd"
 import dayjs from "dayjs"
 import { useEffect, useMemo, useState, type ReactNode } from "react"
 import type { GetSubAuditEventsResponseBody } from "../../../../api/src/api/sub/types"
 import { getSubAuditEvents } from "../../api/api"
+import { ArrowRightOutlined, InfoCircleOutlined } from "@ant-design/icons"
 
 type AuditModalContentProps = {
   id: string
@@ -42,7 +43,54 @@ function eventToString(event: GetSubAuditEventsResponseBody[number]): ReactNode 
           Выплата <Tag variant="outlined">{repaymentAmount} у.е.</Tag><br />Остаток к выплате: <Tag variant="outlined">{newTotal} у.е.</Tag>
         </>
       )
+    case ("SU"):
+      const { diff, reason } = event
+      const parsedDiff = JSON.parse(diff)
+      const { package: pkg, ...rest } = parsedDiff
+      return (
+        <>
+          <Collapse items={[
+            {
+              key: "details",
+              label: "Данные изменены",
+              children: (
+                <>
+                  {reason && <div style={{ backgroundColor: "#DEEFF5", display: "flex", gap: 8, padding: 8 }}>
+                    <InfoCircleOutlined />
+                    <div style={{ borderLeft: "1px solid black" }}></div>
+                    <span>{reason}</span>
+                  </div>}
+                  <Descriptions
+                    size="small"
+                    layout="vertical"
+                    items={Object.entries({ ...rest, ...pkg }).map(([key, value]: [any, any]) => {
+                      const {prevValue, newValue} = ["paymentDate", "startDate", "endDate"].includes(key)
+                        ? {prevValue: dayjs(value.prevValue).format("MM.DD.YYYY"), newValue: dayjs(value.newValue).format("MM.DD.YYYY")}
+                        : value
 
+                      return {
+                        label: key,
+                        span: "filled",
+                        children: (
+                          <div style={{display: "flex", gap: 6, flexWrap: "wrap", overflow: "hidden"}}>
+                            <Tag variant="outlined">{prevValue}</Tag>
+                            <ArrowRightOutlined />
+                            <Tag variant="outlined">{newValue}</Tag>
+
+                          </div>
+                        )
+                      }
+                    })}
+                  />
+
+
+                </>
+              )
+
+            }
+          ]} />
+        </>
+      )
     default: return ""
   }
 }
@@ -65,5 +113,5 @@ export function AuditModalContent({ id }: AuditModalContentProps) {
     })
   }, [id, auditEvents])
 
-  return <Timeline titleSpan="35%" items={items} />
+  return <Timeline titleSpan="35%" items={items} style={{overflowY: "auto"}} />
 }

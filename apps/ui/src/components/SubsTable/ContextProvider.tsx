@@ -10,7 +10,7 @@ export type ContextShape = {
   setModalConfig: (config: ModalConfig) => void
 }
 
-type ModalConfig = Pick<ModalProps, "children" | "title" | "open">
+type ModalConfig = Pick<ModalProps, "children" | "title" | "open" | "closable">
 
 export const subsTableContext = createContext<ContextShape | null>(null)
 
@@ -37,21 +37,22 @@ export default function SubsTableCtxProvider({ children }: PropsWithChildren) {
     >
       {children}
       <Modal
-        styles={{ container: { maxHeight: "80vh", overflowY: "auto" } }}
-        closable={true}
+        // styles={{ container: { maxHeight: "80vh" } }}
+        closable={modalConfig.closable}
         open={modalConfig.open}
         footer={false}
 
         title={modalConfig.title}
         mask={{ closable: true, blur: true }}
         destroyOnHidden
+        
 
 
         onCancel={() => closeModal()}
       // okButtonProps={{ htmlType: "submit" }}
       // onOk={onOk}
       >
-        <div style={{ paddingTop: 12 }}>
+        <div style={{ maxHeight: "75vh", display: "flex", flexFlow: "column nowrap", paddingTop: modalConfig.closable == false ? 0 : 12 }}>
           {modalConfig.children}
 
         </div>

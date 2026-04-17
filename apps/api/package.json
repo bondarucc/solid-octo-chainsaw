@@ -8,6 +8,7 @@
     "studio:test": "NODE_ENV=test npx prisma studio",
     "migrate:dev": "NODE_ENV=dev npx prisma migrate dev",
     "migrate:test": "NODE_ENV=test npx prisma migrate dev",
+    "migrate": "npx prisma migrate dev",
     "build": "npm install && npm install -w=ui && rm -rf dist && rm -rf generated && npx prisma generate && npx prisma migrate dev && npx tsc && cp -rf generated dist && npm run build -w=ui",
     "generate": "npx prisma generate",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand"

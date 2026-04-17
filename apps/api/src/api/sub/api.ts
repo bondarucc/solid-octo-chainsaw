@@ -5,6 +5,7 @@ import { GET_SUBS_ARGS, type GetSubAuditEventsResponseBody, type GetSubsListResp
 import { sortAuditEventsByTimestamp } from "./helpers.js"
 import { extendSubPackage } from "./extendSubPackage.js"
 import { adminMiddleware } from "../auth/adminWiddleware.js"
+import updateSub from "./updateSub.js"
 
 const router = express.Router()
 
@@ -92,6 +93,12 @@ secureInnerRouter.get("/:id/audit", async (req: Request<{ id: string }>, res) =>
     }
   })).map(srEvent => ({ type: "SR" as const, ...srEvent }))
 
+  const su = (await prisma.sU_AE.findMany({
+    where: {
+      subId
+    }
+  })).map(suEvent => ({ type: "SU" as const, ...suEvent }))
+
   // const sssai = (await prisma.sSSAI_AE.findMany({
   //   where: {
   //     subId
@@ -99,7 +106,7 @@ secureInnerRouter.get("/:id/audit", async (req: Request<{ id: string }>, res) =>
   //   include: { sc_ae: { include: { sub: { include: { attractedBy: true } } } } }
   // })).map(sssaiEvent => ({ type: "SSSAI" as const, ...sssaiEvent }))
 
-  const result: GetSubAuditEventsResponseBody = sortAuditEventsByTimestamp([sc, ...spe, ...srt, ...sr])
+  const result: GetSubAuditEventsResponseBody = sortAuditEventsByTimestamp([sc, ...su, ...spe, ...srt, ...sr])
 
   // const result: GetSubAuditEventsResponseBody = {
   //   sc,
@@ -137,7 +144,10 @@ secureInnerRouter.get("/:id/extend", async (req, res) => {
 secureInnerRouter.get("/:id", async (req, res) => {
   const sub = await prisma.sub.findFirst({
     where: {
-      id: req.params.id
+      externalId: req.params.id
+    },
+    include: {
+      package: true
     }
   })
   res.json(sub)
@@ -207,6 +217,12 @@ secureInnerRouter.post(`/:id/repayment`, async (req, res) => {
   )
 
   res.json("ok")
+})
+
+// update sub
+secureInnerRouter.post("/:id", async (req, res) => {
+  
+  res.json(await updateSub(req.params.id, req.body))
 })
 
 export { router as subRouter }

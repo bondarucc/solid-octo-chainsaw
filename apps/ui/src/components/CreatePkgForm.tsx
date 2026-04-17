@@ -40,9 +40,14 @@ const regionOptions: SelectProps["options"] = [
   }
 ]
 
+interface CreatePkgForm {
+  prefix: string[],
+  mode: "new" | "view" | "edit"
+}
 
 
-export default function CreatePkgForm({ prefix }: { prefix: string[] }) {
+
+export default function CreatePkgForm({ prefix, mode }: CreatePkgForm) {
   const form = useFormInstance()
   const currentRegion = useWatch([...prefix, "region"])
   const regionOnChange = useCallback<NonNullable<SelectProps["onChange"]>>(value => {
@@ -56,7 +61,7 @@ export default function CreatePkgForm({ prefix }: { prefix: string[] }) {
       form.setFieldValue([...prefix, "paymentCurr"], "USD")
     }
 
-  }, [form])
+  }, [form, prefix])
 
   const onPkgTypeChange = useCallback<NonNullable<SelectProps["onChange"]>>((value) => {
     let defaultPaymentAmount: number
@@ -67,7 +72,7 @@ export default function CreatePkgForm({ prefix }: { prefix: string[] }) {
 
   }, [form, currentRegion])
 
-  const pkgTypeDisabled = !currentRegion || currentRegion === "EU"
+  const pkgTypeDisabled = mode === "view" || !currentRegion || currentRegion === "EU"
 
   return (
     <>
@@ -75,7 +80,7 @@ export default function CreatePkgForm({ prefix }: { prefix: string[] }) {
       <Row gutter={20}>
         <Col span={12}>
           <Form.Item name={[...prefix, "region"]} label="Регион" >
-            <Select options={regionOptions} placeholder="Выбрать..." onChange={regionOnChange} />
+            <Select options={regionOptions} disabled={mode === "view"} placeholder="Выбрать..." onChange={regionOnChange} />
           </Form.Item>
 
         </Col>
@@ -94,11 +99,11 @@ export default function CreatePkgForm({ prefix }: { prefix: string[] }) {
                 controls={false}
                 mode="spinner"
                 precision={0}
-
+                disabled={mode === "view"}
               />
             </Form.Item>
             <Form.Item name={[...prefix, "paymentCurr"]} >
-              <Select options={currOptions} style={{ minWidth: "80px" }} />
+              <Select disabled={mode === "view"} options={currOptions} style={{ minWidth: "80px" }} />
             </Form.Item>
 
           </Space.Compact>
@@ -110,8 +115,9 @@ export default function CreatePkgForm({ prefix }: { prefix: string[] }) {
             label="Дата оплаты"
             normalize={(v: Dayjs) => v && v.format("YYYY-MM-DD")}
             getValueProps={(v?: string) => ({ value: v && dayjs(v) })}
+            
           >
-            <DatePicker format="DD-MM-YYYY" placeholder="Выбрать дату" style={{ width: "100%" }}
+            <DatePicker disabled={mode === "view"} format="DD-MM-YYYY" placeholder="Выбрать дату" style={{ width: "100%" }}
             />
           </Form.Item>
         </Col>
@@ -123,7 +129,7 @@ export default function CreatePkgForm({ prefix }: { prefix: string[] }) {
             normalize={(fromToDate: [Dayjs, Dayjs] | null) => fromToDate && fromToDate.map(date => date.format("YYYY-MM-DD"))}
             getValueProps={(fromToDate: [string, string] | null) => ({ value: fromToDate && fromToDate.map(date => dayjs(date)) })}
           >
-            <DatePicker.RangePicker style={{ width: "100%" }} format="DD-MM-YYYY" placeholder={["От", "До"]} />
+            <DatePicker.RangePicker allowClear={false} disabled={mode === "view"} style={{ width: "100%" }} format="DD-MM-YYYY" placeholder={["От", "До"]} />
           </Form.Item>
         </Col>
       </Row>

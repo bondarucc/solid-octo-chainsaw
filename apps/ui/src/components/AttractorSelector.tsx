@@ -18,7 +18,7 @@ const rewardTypeFieldName = ["attractor", "rewardType"]
 const attractorIdFieldName = ["attractor", "externalId"]
 type OptionType = { value: string, label: string, tier: number }
 
-export default function AttractorSelector() {
+export default function AttractorSelector({disabled}: {disabled: boolean}) {
   const [subsList, setSubsList] = useState<Awaited<ReturnType<typeof getFullSubsList>>>([])
   const [rewardSelectorDisabled, setRewardSelectorDisabled] = useState<boolean>(false)
   const form = Form.useFormInstance()
@@ -51,9 +51,9 @@ export default function AttractorSelector() {
   return (
     <div style={{ marginBottom: 12 }}>
       <Form.Item name={attractorIdFieldName} label="Реферал" style={{ marginBottom: 4 }}>
-        <Select options={attractorIdOptions} onSelect={onAttractorSelect} showSearch={{ optionFilterProp: "label" }} allowClear />
+        <Select disabled options={attractorIdOptions} onSelect={onAttractorSelect} showSearch={{ optionFilterProp: "label" }} allowClear />
       </Form.Item>
-      {selectedAttractor && <Form.Item name={rewardTypeFieldName} noStyle>
+      {selectedAttractor && !disabled && <Form.Item name={rewardTypeFieldName} noStyle>
         <Radio.Group
           disabled={rewardSelectorDisabled}
           options={rewardTypeOptions}

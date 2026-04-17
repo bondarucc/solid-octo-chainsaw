@@ -1,7 +1,8 @@
 import type { CreateUserRequestBody, CreateUserResponseBody, GetUsersListResponseBody } from "../../../api/src/api/user/types.ts"
-import type { CreateSubRequestBody, CreateSubResponseBody, GetAssignableSubsResponseBody, GetSubAuditEventsResponseBody, GetSubsListResponseBody } from "../../../api/src/api/sub/types.ts"
+import type { CreateSubRequestBody, CreateSubResponseBody, GetAssignableSubsResponseBody, GetSingleSubResponseBody, GetSubAuditEventsResponseBody, GetSubsListResponseBody, SubUpdateRequestBody, SubUpdateResponseBody } from "../../../api/src/api/sub/types.ts"
 import type { Filters } from "../components/SubsTable/FilteringPanel.tsx"
 import type { GetMeResponseBody } from "../../../api/src/api/auth/types.ts"
+import type { ReplaceDatesWithStrings } from "../helpers/types.ts"
 
 
 async function fetchWrapper(url: string, options?: Parameters<typeof fetch>[1]) {
@@ -83,4 +84,20 @@ export async function extendSubPkgBy1Year(id: string) {
 export async function doRepayment(id: string, amount: number) {
   await fetchWrapper(`subs/${id}/repayment`, { method: "POST", body: JSON.stringify({ repaymentAmount: amount }), headers: [["Content-Type", "application/json"]] })
 
+}
+
+export async function getSubDetails(id: string): Promise<ReplaceDatesWithStrings<GetSingleSubResponseBody>> {
+  return fetchWrapper(`/subs/${id}`)
+
+}
+
+export async function doUpdateSubDetails(id: string, data: SubUpdateRequestBody): Promise<SubUpdateResponseBody> {
+  return fetchWrapper(
+    `/subs/${id}`,
+    { 
+      method: "POST",
+      body: JSON.stringify(data),
+      headers: [["Content-Type", "application/json"]] 
+    }
+  )
 }

@@ -1,6 +1,7 @@
 import type { User, Package, Sub, SC_AE } from "../../../generated/prisma/client.ts";
 import type { } from "../../../generated/prisma/index.js";
 import type { Prisma } from "../../../generated/prisma/index.js";
+import updateSub from "./updateSub.js";
 
 
 
@@ -74,8 +75,33 @@ export type GetAssignableSubsResponseBody = Prisma.SubGetPayload<{}>[]
 //   sssai_ae: SSSAI_AEGetPayload<{ include: { sc_ae: { include: { sub: { include: { attractedBy: true } } } } } }>[]
 // }
 
+export type GetSingleSubResponseBody = Prisma.SubGetPayload<{
+  include: {
+    package: true
+  }
+}>
+
 export type GetSubAuditEventsResponseBody = (
   | { type: "SC" } & SC_AE
   | { type: "SPE" } & Prisma.SPE_AEGetPayload<{ include: { sc_ae: { include: { sub: true } } } }>
   | { type: "SR" } & Prisma.SR_AEGetPayload<{}>
+  | { type: "SU" } & Prisma.SU_AEGetPayload<{}>
   | { type: "SRT" } & Prisma.SRT_AEGetPayload<{ include: { sc_ae: { include: { sub: true } } } }>)[]
+
+
+export type SubUpdateRequestBody = Pick<
+  Sub,
+  "login" | "pwd" | "epg" | "m3uPlaylist" | "media" | "publicKey" | "note"
+> & {
+  reason: string | null
+  package: Pick<
+    Package,
+    "paymentAmount" | "paymentCurr" | "pkgType" | "region"
+  > & {
+    paymentDate: string | null
+    startDate: string 
+    endDate: string
+  }
+}
+
+export type SubUpdateResponseBody = Awaited<ReturnType<typeof updateSub>>
