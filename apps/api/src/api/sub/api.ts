@@ -225,4 +225,25 @@ secureInnerRouter.post("/:id", async (req, res) => {
   res.json(await updateSub(req.params.id, req.body))
 })
 
+secureInnerRouter.post("/:id/userAssign", async (req, res) => {
+  const {login, pwd, role} = req.body
+  await prisma.sub.update({
+    where: {
+      externalId: req.params.id
+    },
+    data: {
+      user: {
+        create: {
+          login,
+          pwd,
+          role
+        }
+      }
+    }
+  })
+
+  res.json("ok")
+
+})
+
 export { router as subRouter }

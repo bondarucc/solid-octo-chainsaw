@@ -3,6 +3,7 @@ import type { CreateSubRequestBody, CreateSubResponseBody, GetAssignableSubsResp
 import type { Filters } from "../components/SubsTable/FilteringPanel.tsx"
 import type { GetMeResponseBody } from "../../../api/src/api/auth/types.ts"
 import type { ReplaceDatesWithStrings } from "../helpers/types.ts"
+import type { User } from "../../../api/generated/prisma/index"
 
 
 async function fetchWrapper(url: string, options?: Parameters<typeof fetch>[1]) {
@@ -94,6 +95,17 @@ export async function getSubDetails(id: string): Promise<ReplaceDatesWithStrings
 export async function doUpdateSubDetails(id: string, data: SubUpdateRequestBody): Promise<SubUpdateResponseBody> {
   return fetchWrapper(
     `/subs/${id}`,
+    { 
+      method: "POST",
+      body: JSON.stringify(data),
+      headers: [["Content-Type", "application/json"]] 
+    }
+  )
+}
+
+export async function doAssignUser(subExternalId: string, data: Pick<User, "login" | "pwd" | "role">) {
+  return fetchWrapper(
+    `/subs/${subExternalId}/userAssign`,
     { 
       method: "POST",
       body: JSON.stringify(data),

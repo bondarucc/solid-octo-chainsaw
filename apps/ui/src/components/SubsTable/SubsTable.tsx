@@ -10,12 +10,13 @@ import FilteringPanel from "./FilteringPanel.tsx"
 import useSubsTableContext from "./hooks/useSubsTableContext.ts"
 import RepaymentModalContent from "./RepaymentModalContent.tsx"
 import ViewEditSubModalContent from "../ViewEditSubModalContent.tsx"
+import CreateUserModalContent from "../CreateUserModalContent.tsx"
 
 const TRNS = {
- ROLE: {
-  ["ADMIN"]: "Админ",
-  ["PARTNER"]: "Партнер"
- } as const
+  ROLE: {
+    ["ADMIN"]: "Админ",
+    ["PARTNER"]: "Партнер"
+  } as const
 }
 
 type SubItem = Awaited<ReturnType<typeof getFullSubsList>>[number]
@@ -38,6 +39,7 @@ export default function SubsTable() {
     return [
       {
         title: "Внешний ID",
+        fixed: "start",
         key: "externalId",
         render({ externalId, package: pkg }: SubItem) {
           const endDate = dayjs(pkg?.endDate)
@@ -133,14 +135,14 @@ export default function SubsTable() {
       {
         title: "Пакет",
         key: "pkg",
-        render: ({package: pkg}: SubItem) => {
+        render: ({ package: pkg }: SubItem) => {
           if (!pkg) return
-          const {endDate, paymentAmount, paymentCurr, paymentDate, pkgType, region, startDate } = pkg
+          const { endDate, paymentAmount, paymentCurr, paymentDate, pkgType, region, startDate } = pkg
           return (
             <div>
-              {region && pkgType && <div style={{whiteSpace: "nowrap"}}>{region} - {pkgType}</div>}
-              <div style={{whiteSpace: "nowrap"}}>{dayjs(startDate).format("DD.MM.YYYY")} - {dayjs(endDate).format("DD.MM.YYYY")}</div>
-              {paymentAmount && paymentCurr && paymentDate && <div style={{whiteSpace: "nowrap"}}>{pkg.paymentAmount?.toFixed(2)}{pkg.paymentCurr} - {dayjs(pkg.paymentDate).format("DD.MM.YYYY")}</div>}
+              {region && pkgType && <div style={{ whiteSpace: "nowrap" }}>{region} - {pkgType}</div>}
+              <div style={{ whiteSpace: "nowrap" }}>{dayjs(startDate).format("DD.MM.YYYY")} - {dayjs(endDate).format("DD.MM.YYYY")}</div>
+              {paymentAmount && paymentCurr && paymentDate && <div style={{ whiteSpace: "nowrap" }}>{pkg.paymentAmount?.toFixed(2)}{pkg.paymentCurr} - {dayjs(pkg.paymentDate).format("DD.MM.YYYY")}</div>}
             </div>
           )
         }
@@ -194,9 +196,9 @@ export default function SubsTable() {
               // title: sub.externalId,
               children: <ViewEditSubModalContent refresh={getAllSubs} subExternalId={sub.externalId} />,
               closable: false
-              
+
             })
-            
+
           },
         })}
         rowKey={sub => sub.externalId}
@@ -235,12 +237,23 @@ function ActionsDropdown({ sub, refresh }: { sub: SubItem, refresh: () => void }
       },
       {
         key: 3,
+        label: "Создать личный кабинет",
+        onClick: () => {
+          setModalConfig({
+            open: true,
+            title: `Создать личный кабинет для ${sub.externalId}`,
+            children: <CreateUserModalContent subExternalId={sub.externalId} onSuccess={refresh} />
+          })
+        }
+      },
+      {
+        key: 4,
         label: "Рассчет",
         onClick: () => {
           setModalConfig({
             open: true,
             title: "Рассчет",
-            children: <RepaymentModalContent {...sub} onSuccess={refresh}/>
+            children: <RepaymentModalContent {...sub} onSuccess={refresh} />
           })
         }
       }
@@ -249,8 +262,8 @@ function ActionsDropdown({ sub, refresh }: { sub: SubItem, refresh: () => void }
 
   return (
     <ClickGuard>
-      <Dropdown menu={{ items }} trigger={["click"]}>
-        <MoreOutlined />
+      <Dropdown menu={{ items }} trigger={["click"]} >
+        <Button icon={<MoreOutlined />} />
       </Dropdown>
     </ClickGuard>
 

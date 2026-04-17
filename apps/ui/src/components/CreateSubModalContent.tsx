@@ -12,7 +12,7 @@ import CreateSubForm from "./CreateSubForm.tsx"
 
 function formValuesToRequestBody(formValues: CreateSubFormShape): CreateSubRequestBody {
 
-  const { user, epg, m3uPlaylist, note, package: pkg, externalId, login, pwd, media, publicKey, attractor} = formValues
+  const { user, epg, m3uPlaylist, note, package: pkg, externalId, login, pwd, media, publicKey, attractor } = formValues
   if (!externalId) throw "Пустой сторонний ID"
   const userToSubmit = userValidateAndTransform(user)
   const pkgToSubmit = packageValidateAndTransform(pkg)
@@ -33,12 +33,12 @@ function formValuesToRequestBody(formValues: CreateSubFormShape): CreateSubReque
 
 }
 
-function attractorValidateAndTransform({externalId, rewardType}: CreateSubFormShape["attractor"]): CreateSubRequestBody["attractor"]  {
+function attractorValidateAndTransform({ externalId, rewardType }: CreateSubFormShape["attractor"]): CreateSubRequestBody["attractor"] {
   if (externalId && rewardType) return {
     externalId,
     rewardType
   }
-  
+
 }
 
 function validatePkgFromToDates(dates: NonNullable<CreateSubFormShape["package"]>["activationPeriod"]): dates is [string, string] {
@@ -88,7 +88,7 @@ export default function CreateSubModalContent({ onSuccess }: { onSuccess: () => 
         await createSub(request)
         onSuccess()
         closeModal()
-      } catch(e) {
+      } catch (e) {
         console.log(e);
       }
 
@@ -102,57 +102,57 @@ export default function CreateSubModalContent({ onSuccess }: { onSuccess: () => 
 
 
   return (
-    <>
-      <Form<CreateSubFormShape>
-        form={form}
-        onFinish={submit}
-        validateMessages={{
-          required: ""
-        }}
-        initialValues={{
-          package: {
-            paymentCurr: "EUR"
-          },
-          user: {
-            role: "PARTNER"
-          },
-          attractor: {
-            rewardType: "MONETARY"
-          }
 
-        }}
-        layout="vertical"
+    <Form<CreateSubFormShape>
+      form={form}
+      onFinish={submit}
+      style={{overflowY: "auto", overflowX: "hidden", paddingRight: 6}}
+      validateMessages={{
+        required: ""
+      }}
+      initialValues={{
+        package: {
+          paymentCurr: "EUR"
+        },
+        user: {
+          role: "PARTNER"
+        },
+        attractor: {
+          rewardType: "MONETARY"
+        }
 
-      >
-        <CreateSubForm mode="new"/>
+      }}
+      layout="vertical"
 
-        <Divider />
-        <Typography.Title level={5}>Пакет</Typography.Title>
-        <CreatePkgForm prefix={["package"]} mode="new" />
+    >
+      <CreateSubForm mode="new" />
 
-        <Divider />
-        <Typography.Title level={5}>
-          Партнер
-          <Button
-            type="text"
-            onClick={() => setAddUser(!addUser)}
-            icon={addUser ? <UserAddOutlined /> : <UserDeleteOutlined />}
-            style={{ marginLeft: "10px" }}
-          />
-        </Typography.Title>
+      <Divider />
+      <Typography.Title level={5}>Пакет</Typography.Title>
+      <CreatePkgForm prefix={["package"]} mode="new" />
 
-        {addUser && <CreateUserForm prefix={["user"]} />}
+      <Divider />
+      <Typography.Title level={5}>
+        Партнер
+        <Button
+          type="text"
+          onClick={() => setAddUser(!addUser)}
+          icon={addUser ? <UserAddOutlined /> : <UserDeleteOutlined />}
+          style={{ marginLeft: "10px" }}
+        />
+      </Typography.Title>
 
-        <Typography.Text type="danger">
-          {validationError}
-        </Typography.Text>
+      {addUser && <CreateUserForm prefix={["user"]} />}
 
-        <Divider />
-        <Flex justify="end" gap={16}>
-          <Button color="default" variant="filled" onClick={closeModal}>Отмена</Button>
-          <Button type="primary" htmlType="submit">Ок</Button>
-        </Flex>
-      </Form>
-    </>
+      <Typography.Text type="danger">
+        {validationError}
+      </Typography.Text>
+
+      <Divider />
+      <Flex justify="end" gap={16}>
+        <Button color="default" variant="filled" onClick={closeModal}>Отмена</Button>
+        <Button type="primary" htmlType="submit">Ок</Button>
+      </Flex>
+    </Form>
   )
 }
