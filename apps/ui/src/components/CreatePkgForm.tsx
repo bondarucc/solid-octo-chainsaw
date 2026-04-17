@@ -125,7 +125,7 @@ export default function CreatePkgForm({ prefix, mode }: CreatePkgForm) {
           <Form.Item
             name={[...prefix, "activationPeriod"]}
             label="Активен"
-            rules={[{ required: true }]}
+            rules={[{ required: mode !== "view" }]}
             normalize={(fromToDate: [Dayjs, Dayjs] | null) => fromToDate && fromToDate.map(date => date.format("YYYY-MM-DD"))}
             getValueProps={(fromToDate: [string, string] | null) => ({ value: fromToDate && fromToDate.map(date => dayjs(date)) })}
           >

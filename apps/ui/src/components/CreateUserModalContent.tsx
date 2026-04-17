@@ -34,7 +34,7 @@ export default function CreateUserModalContent({subExternalId, onSuccess }: Crea
       layout="vertical"
 
     >
-      <CreateUserForm prefix={[]}/>
+      {/* <CreateUserForm prefix={[]}/> */}
       <Divider />
       <Flex justify="end" gap={16}>
         <Button color="default" variant="filled" onClick={closeModal}>Отмена</Button>

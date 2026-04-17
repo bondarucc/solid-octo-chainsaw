@@ -46,7 +46,8 @@ function eventToString(event: GetSubAuditEventsResponseBody[number]): ReactNode 
     case ("SU"):
       const { diff, reason } = event
       const parsedDiff = JSON.parse(diff)
-      const { package: pkg, ...rest } = parsedDiff
+      const { package: pkg, user, ...rest } = parsedDiff
+
       return (
         <>
           <Collapse items={[
@@ -63,18 +64,21 @@ function eventToString(event: GetSubAuditEventsResponseBody[number]): ReactNode 
                   <Descriptions
                     size="small"
                     layout="vertical"
-                    items={Object.entries({ ...rest, ...pkg }).map(([key, value]: [any, any]) => {
-                      const {prevValue, newValue} = ["paymentDate", "startDate", "endDate"].includes(key)
-                        ? {prevValue: dayjs(value.prevValue).format("MM.DD.YYYY"), newValue: dayjs(value.newValue).format("MM.DD.YYYY")}
+                    items={Object.entries({ ...rest, ...pkg, ...(user.login ? { partnerLogin: user.login } : {}), ...(user.pwd ? { partnerPwd: user.pwd } : {}), ...(user.role ? { partnerRole: user.role } : {}) }).map(([key, value]: [any, any]) => {
+
+                      const { prevValue, newValue } = ["paymentDate", "startDate", "endDate"].includes(key)
+                        ? { prevValue: dayjs(value.prevValue).format("MM.DD.YYYY"), newValue: dayjs(value.newValue).format("MM.DD.YYYY") }
                         : value
 
                       return {
                         label: key,
                         span: "filled",
                         children: (
-                          <div style={{display: "flex", gap: 6, flexWrap: "wrap", overflow: "hidden"}}>
-                            <Tag variant="outlined">{prevValue}</Tag>
-                            <ArrowRightOutlined />
+                          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", overflow: "hidden" }}>
+                            {prevValue !== null && <div style={{ display: "contents" }}>
+                              <Tag variant="outlined">{prevValue}</Tag>
+                              <ArrowRightOutlined />
+                            </div>}
                             <Tag variant="outlined">{newValue}</Tag>
 
                           </div>
@@ -113,5 +117,5 @@ export function AuditModalContent({ id }: AuditModalContentProps) {
     })
   }, [id, auditEvents])
 
-  return <Timeline titleSpan="35%" items={items} style={{overflowY: "auto"}} />
+  return <Timeline titleSpan="35%" items={items} style={{ overflowY: "auto" }} />
 }

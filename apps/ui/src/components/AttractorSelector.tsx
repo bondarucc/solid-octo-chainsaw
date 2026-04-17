@@ -51,7 +51,7 @@ export default function AttractorSelector({disabled}: {disabled: boolean}) {
   return (
     <div style={{ marginBottom: 12 }}>
       <Form.Item name={attractorIdFieldName} label="Реферал" style={{ marginBottom: 4 }}>
-        <Select disabled options={attractorIdOptions} onSelect={onAttractorSelect} showSearch={{ optionFilterProp: "label" }} allowClear />
+        <Select disabled={disabled} options={attractorIdOptions} onSelect={onAttractorSelect} showSearch={{ optionFilterProp: "label" }} allowClear />
       </Form.Item>
       {selectedAttractor && !disabled && <Form.Item name={rewardTypeFieldName} noStyle>
         <Radio.Group

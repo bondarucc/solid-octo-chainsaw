@@ -1,14 +1,15 @@
-import { CloseCircleOutlined, EditOutlined, SaveOutlined } from "@ant-design/icons";
+import { CloseCircleOutlined, EditOutlined, SaveOutlined, UserAddOutlined, UserDeleteOutlined } from "@ant-design/icons";
 import { Button, Divider, Form, Input, Typography } from "antd";
 import { useCallback, useEffect, useState } from "react";
 import CreatePkgForm from "./CreatePkgForm";
 import { doUpdateSubDetails, getSubDetails } from "../api/api";
 import dayjs from "dayjs";
 import CreateSubForm from "./CreateSubForm";
-import type { Package, Sub } from "../../../api/generated/prisma";
+import type { Package, Sub, User } from "../../../api/generated/prisma";
 import type { ReplaceDatesWithStrings } from "../helpers/types";
 import type { SubUpdateRequestBody } from "../../../api/src/api/sub/types";
 import useSubsTableContext from "./SubsTable/hooks/useSubsTableContext";
+import CreateUserForm from "./CreateUserForm";
 
 interface ViewEditSubModalContentProps {
   subExternalId: string
@@ -22,11 +23,12 @@ type FormShape = Pick<
   package: ReplaceDatesWithStrings<Pick<Package, "paymentAmount" | "paymentCurr" | "paymentDate" | "pkgType" | "region">> & {
     activationPeriod: [string | null, string | null] | null
   }
-  reason: string | null
+  reason: string | null,
+  user: Pick<User, "login" | "role" | "pwd"> | null
 }
 
 function formValuesToRequestBody(formValues: FormShape): SubUpdateRequestBody {
-  const { epg, login, m3uPlaylist, media, note, package: pkg, publicKey, pwd, reason } = formValues
+  const { epg, login, m3uPlaylist, media, note, package: pkg, publicKey, pwd, reason, user } = formValues
   const { activationPeriod, paymentAmount, paymentCurr, paymentDate, pkgType, region } = pkg
   if (!activationPeriod || !activationPeriod[0] || !activationPeriod[1]) throw null
   //trim
@@ -47,7 +49,8 @@ function formValuesToRequestBody(formValues: FormShape): SubUpdateRequestBody {
       region: region ?? null,
       startDate: activationPeriod[0],
       endDate: activationPeriod[1]
-    }
+    },
+    user
   }
 
 
@@ -57,6 +60,7 @@ export default function ViewEditSubModalContent({ subExternalId, refresh }: View
   const [editMode, setEditMode] = useState<boolean>(false)
   const [form] = Form.useForm<FormShape>()
   const { closeModal } = useSubsTableContext()
+  const [editUser, setEditUser] = useState<boolean>(false)
 
   const [subDetails, setSubDetails] = useState<Awaited<ReturnType<typeof getSubDetails>>>()
 
@@ -69,7 +73,8 @@ export default function ViewEditSubModalContent({ subExternalId, refresh }: View
           sub?.package?.startDate ?? null,
           sub?.package?.endDate ?? null
         ]
-      }
+      },
+      user: sub?.user ? sub?.user : {role: "PARTNER"}
     })
   }, [form])
 
@@ -144,7 +149,7 @@ export default function ViewEditSubModalContent({ subExternalId, refresh }: View
             transition: "all 0.5s ease-in-out",
             marginBottom: editMode ? 24 : 0
           }}
-          
+
         >
           <Input.TextArea autoSize={{ minRows: 2, maxRows: 4 }} />
         </Form.Item>
@@ -152,10 +157,19 @@ export default function ViewEditSubModalContent({ subExternalId, refresh }: View
 
 
         <CreateSubForm mode={editMode ? "edit" : "view"} />
-        <Divider />
-        <Typography.Title level={5}>Пакет</Typography.Title>
+        <Divider>Пакет</Divider>
         <CreatePkgForm prefix={["package"]} mode={editMode ? "edit" : "view"} />
 
+        <Divider>
+          Партнер
+          <Button
+            type="text"
+            onClick={() => setEditUser(!editUser)}
+            icon={editUser ? <UserAddOutlined /> : <UserDeleteOutlined />}
+            style={{ marginLeft: "10px" }}
+          />
+        </Divider>
+        {editUser && <CreateUserForm mode={editMode ? subDetails?.user ? "edit": "new" : "view"} prefix={["user"]} />}
 
       </div>
 

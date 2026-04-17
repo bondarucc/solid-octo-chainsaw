@@ -147,7 +147,13 @@ secureInnerRouter.get("/:id", async (req, res) => {
       externalId: req.params.id
     },
     include: {
-      package: true
+      package: true,
+      user: {
+        select: {
+          login: true,
+          role: true
+        }
+      }
     }
   })
   res.json(sub)

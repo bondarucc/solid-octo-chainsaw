@@ -12,7 +12,7 @@ export default function CreateSubForm({mode}: CreateSubFormProps) {
         <Form.Item
           name="externalId"
           label="Сторонний ID"
-          rules={[{ required: true }]}
+          rules={[{ required: mode !== "view" }]}
         >
           <Input disabled={mode !== "new"} />
         </Form.Item>

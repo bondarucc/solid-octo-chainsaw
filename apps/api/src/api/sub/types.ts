@@ -77,7 +77,13 @@ export type GetAssignableSubsResponseBody = Prisma.SubGetPayload<{}>[]
 
 export type GetSingleSubResponseBody = Prisma.SubGetPayload<{
   include: {
-    package: true
+    package: true,
+    user: {
+      select: {
+        login: true,
+        role: true
+      }
+    }
   }
 }>
 
@@ -94,6 +100,7 @@ export type SubUpdateRequestBody = Pick<
   "login" | "pwd" | "epg" | "m3uPlaylist" | "media" | "publicKey" | "note"
 > & {
   reason: string | null
+  user: Pick<User, "login" | "pwd" | "role"> | null
   package: Pick<
     Package,
     "paymentAmount" | "paymentCurr" | "pkgType" | "region"

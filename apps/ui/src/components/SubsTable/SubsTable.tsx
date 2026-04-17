@@ -235,17 +235,17 @@ function ActionsDropdown({ sub, refresh }: { sub: SubItem, refresh: () => void }
           refresh()
         }
       },
-      {
-        key: 3,
-        label: "Создать личный кабинет",
-        onClick: () => {
-          setModalConfig({
-            open: true,
-            title: `Создать личный кабинет для ${sub.externalId}`,
-            children: <CreateUserModalContent subExternalId={sub.externalId} onSuccess={refresh} />
-          })
-        }
-      },
+      // {
+      //   key: 3,
+      //   label: "Создать личный кабинет",
+      //   onClick: () => {
+      //     setModalConfig({
+      //       open: true,
+      //       title: `Создать личный кабинет для ${sub.externalId}`,
+      //       children: <CreateUserModalContent subExternalId={sub.externalId} onSuccess={refresh} />
+      //     })
+      //   }
+      // },
       {
         key: 4,
         label: "Рассчет",

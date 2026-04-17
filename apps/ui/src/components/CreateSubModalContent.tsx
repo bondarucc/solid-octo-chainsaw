@@ -142,7 +142,7 @@ export default function CreateSubModalContent({ onSuccess }: { onSuccess: () => 
         />
       </Typography.Title>
 
-      {addUser && <CreateUserForm prefix={["user"]} />}
+      {addUser && <CreateUserForm mode="new" prefix={["user"]} />}
 
       <Typography.Text type="danger">
         {validationError}

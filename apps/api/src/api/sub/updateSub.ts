@@ -1,4 +1,5 @@
-import { Package, Prisma, Sub } from "../../../generated/prisma/index.js";
+import { hashSync } from "bcrypt";
+import { Package, Prisma, Sub, User } from "../../../generated/prisma/index.js";
 import { prisma } from "../../initDB.js";
 import { SubUpdateRequestBody } from "./types.js";
 
@@ -8,19 +9,21 @@ export default async function updateSub(id: string, inputData: SubUpdateRequestB
       externalId: id
     },
     include: {
-      package: true
+      package: true,
+      user: true
     }
   })
 
   return await prisma.$transaction(async trn => {
-    const { epg, login, m3uPlaylist, media, note, package: pkg, publicKey, pwd, reason } = inputData
+    const { epg, login, m3uPlaylist, media, note, package: pkg, publicKey, pwd, reason, user } = inputData
     const { endDate, paymentAmount, paymentCurr, paymentDate, pkgType, region, startDate } = pkg
     const newSubData = await trn.sub.update({
       where: {
         externalId: id
       },
       include: {
-        package: true
+        package: true,
+        user: true
       },
       data: {
         // ...inputData // it is better to avoid spread operator in this case
@@ -41,7 +44,8 @@ export default async function updateSub(id: string, inputData: SubUpdateRequestB
             startDate: new Date(startDate),
             endDate: new Date(endDate)
           }
-        }
+        },
+        user: modifyUserData(!!oldSubData.user, user )
       }
     })
 
@@ -64,7 +68,28 @@ export default async function updateSub(id: string, inputData: SubUpdateRequestB
 
 }
 
-type SubWithPkg = Prisma.SubGetPayload<{ include: { package: true } }>
+function modifyUserData(userExists: boolean, userInputData: SubUpdateRequestBody["user"]) {
+  if (userExists && userInputData) {
+    return {
+      update: {
+        pwd: userInputData.pwd ? hashSync(userInputData.pwd, 10) : undefined,
+        role: userInputData.role
+      }
+    }
+  }
+  if (!userExists && userInputData) {
+    return {
+      create: {
+        login: userInputData.login,
+        pwd: hashSync(userInputData.pwd, 10),
+        role: userInputData.role
+      }
+    }
+  }
+  return undefined
+}
+
+type SubWithPkgAndUser = Prisma.SubGetPayload<{ include: { package: true, user: true } }>
 type Result<T extends object> = { [K in keyof T]: T[K] extends object ? Result<T[K]> : { prevValue: T[K], newValue: T[K] } }
 
 function isPackageKey(key: string): key is keyof Package {
@@ -75,9 +100,13 @@ function isSubKey(key: string): key is keyof Sub {
   return true
 }
 
-function whatHasChanged(oldSub: SubWithPkg, newSub: SubWithPkg) {
-  const {package: pkg, ...rest} = oldSub
-  const result: any = {package: {}}
+function isUserKey(key: string): key is keyof User {
+  return true
+}
+
+function whatHasChanged(oldSub: SubWithPkgAndUser, newSub: SubWithPkgAndUser) {
+  const {package: pkg, user, ...rest} = oldSub
+  const result: any = {package: {}, user: {}}
 
   if (newSub.package && pkg) {
     for (const key in pkg) {
@@ -90,6 +119,28 @@ function whatHasChanged(oldSub: SubWithPkg, newSub: SubWithPkg) {
         }
       }
     }
+  }
+
+  if (newSub.user) {
+    for (const key in newSub.user) {
+      if (isUserKey(key)) {
+        if (user == null || (JSON.stringify(user[key]) !== JSON.stringify(newSub.user[key]))) {
+          if (user == null) {
+            result["user"][key] = {
+              prevValue: null,
+              newValue: key === "pwd" ? "***" : newSub.user[key]
+            }
+          } else {
+            result["user"][key] = {
+              prevValue: key === "pwd" ? "***" : user[key],
+              newValue: key === "pwd" ? "***" : newSub.user[key]
+            }
+
+          }
+        }
+      }
+    }
+
   }
 
   for (const key in rest) {
