@@ -14,7 +14,7 @@ import type { RecursivePartial, ReplaceDatesWithStrings } from "../helpers/types
 
 export type CreateSubFormShape = Pick<
   Sub,
-  "externalId" | "login" | "pwd" | "epg" | "m3uPlaylist"| "media" | "publicKey" | "note"
+  "externalId" | "login" | "pwd" | "epg" | "m3uPlaylist"| "media" | "publicKey" | "note" | "customMonetaryRewardAmount"
 > & {
   user: Omit<User, "id" | "subId"> | null
   package: ReplaceDatesWithStrings<Pick<Package, "paymentAmount" | "paymentCurr" | "paymentDate" | "pkgType" | "region">> & {

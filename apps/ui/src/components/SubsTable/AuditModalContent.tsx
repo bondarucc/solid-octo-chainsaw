@@ -21,7 +21,7 @@ function eventToString(event: GetSubAuditEventsResponseBody[number]): ReactNode 
         </>
       )
     case ("SRT"):
-      const { newTotalPayableReward, rewardAmount, rewardType, sc_ae } = event
+      const { newTotalPayableReward, rewardAmount, rewardType, sc_ae, customMonetaryRewardAmount } = event
       if (rewardType === "NEW_SUB") {
         return (
           <>
@@ -31,7 +31,7 @@ function eventToString(event: GetSubAuditEventsResponseBody[number]): ReactNode 
       } else {
         return (
           <>
-            Связанный абонент <Tag variant="outlined">{sc_ae.sub.externalId}</Tag> продлил свой пакет (ранг {sc_ae.attractorTier}). Начислено <Tag variant="outlined">{event.rewardAmount} у.е.</Tag>. Итого к оплате <Tag variant="outlined">{newTotalPayableReward} у.е.</Tag>
+            Связанный абонент <Tag variant="outlined">{sc_ae.sub.externalId}</Tag> продлил свой пакет (ранг {sc_ae.attractorTier}). Начислено <Tag variant="outlined">{event.rewardAmount} у.е.</Tag>{customMonetaryRewardAmount ? " (спец условия)" : ""}. Итого к оплате <Tag variant="outlined">{newTotalPayableReward} у.е.</Tag>
           </>
         )
       }

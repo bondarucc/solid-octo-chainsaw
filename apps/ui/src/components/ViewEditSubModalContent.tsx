@@ -18,7 +18,7 @@ interface ViewEditSubModalContentProps {
 
 type FormShape = Pick<
   Sub,
-  "login" | "pwd" | "epg" | "m3uPlaylist" | "media" | "publicKey" | "note"
+  "login" | "pwd" | "epg" | "m3uPlaylist" | "media" | "publicKey" | "note" | "customMonetaryRewardAmount"
 > & {
   package: ReplaceDatesWithStrings<Pick<Package, "paymentAmount" | "paymentCurr" | "paymentDate" | "pkgType" | "region">> & {
     activationPeriod: [string | null, string | null] | null
@@ -28,7 +28,7 @@ type FormShape = Pick<
 }
 
 function formValuesToRequestBody(formValues: FormShape): SubUpdateRequestBody {
-  const { epg, login, m3uPlaylist, media, note, package: pkg, publicKey, pwd, reason, user } = formValues
+  const { epg, login, m3uPlaylist, media, note, package: pkg, publicKey, pwd, reason, user, customMonetaryRewardAmount } = formValues
   const { activationPeriod, paymentAmount, paymentCurr, paymentDate, pkgType, region } = pkg
   if (!activationPeriod || !activationPeriod[0] || !activationPeriod[1]) throw null
   //trim
@@ -41,6 +41,7 @@ function formValuesToRequestBody(formValues: FormShape): SubUpdateRequestBody {
     note,
     publicKey,
     reason,
+    customMonetaryRewardAmount,
     package: {
       paymentAmount: paymentAmount ?? null,
       paymentCurr: paymentCurr ?? null,

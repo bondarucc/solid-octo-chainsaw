@@ -34,7 +34,7 @@ export async function extendSubPackage(id: Sub["id"]) {
         sub: {
           select: {
             attractedBy: {
-              select: { id: true, totalPayableReward: true }
+              select: { id: true, totalPayableReward: true, customMonetaryRewardAmount: true }
             },
             sc_ae: true
           }
@@ -51,11 +51,11 @@ export async function extendSubPackage(id: Sub["id"]) {
 
 }
 
-async function processAttractor({ sc_ae, trn, attractor }: { sc_ae: SC_AE, trn: PrismaTrnClient, attractor: Prisma.SubGetPayload<{ select: { id: true, totalPayableReward: true } }> }) {
+async function processAttractor({ sc_ae, trn, attractor }: { sc_ae: SC_AE, trn: PrismaTrnClient, attractor: Prisma.SubGetPayload<{ select: { id: true, totalPayableReward: true, customMonetaryRewardAmount: true } }> }) {
   const { attractorTier } = sc_ae
-  const { id: attractorId, totalPayableReward: prevTotalPayableReward } = attractor
+  const { id: attractorId, totalPayableReward: prevTotalPayableReward, customMonetaryRewardAmount } = attractor
   if (attractorTier == null || attractorTier <= 5) return
-  const rewardAmount = Math.min(25, Math.ceil(attractorTier / 5) * 5)
+  const rewardAmount = customMonetaryRewardAmount ?? Math.min(25, Math.ceil(attractorTier / 5) * 5)
 
   await trn.sub.update({
     data: {
@@ -74,6 +74,7 @@ async function processAttractor({ sc_ae, trn, attractor }: { sc_ae: SC_AE, trn: 
       prevTotalPayableReward,
       newTotalPayableReward: prevTotalPayableReward + rewardAmount,
       rewardType: "SUB_EXT",
+      customMonetaryRewardAmount,
       timestamp: new Date(),
       sub: {
         connect: {

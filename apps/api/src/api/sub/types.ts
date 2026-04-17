@@ -7,7 +7,7 @@ import updateSub from "./updateSub.js";
 
 export type CreateSubRequestBody = Pick<
   Prisma.SubCreateInput,
-  "epg" | "externalId" | "login" | "pwd" | "m3uPlaylist" | "media" | "note" | "publicKey"
+  "epg" | "externalId" | "login" | "pwd" | "m3uPlaylist" | "media" | "note" | "publicKey" | "customMonetaryRewardAmount"
 > & {
   package: Pick<Prisma.PackageCreateInput, "pkgType" | "paymentAmount" | "paymentCurr" | "region"> & {
     startDate: string,
@@ -97,7 +97,7 @@ export type GetSubAuditEventsResponseBody = (
 
 export type SubUpdateRequestBody = Pick<
   Sub,
-  "login" | "pwd" | "epg" | "m3uPlaylist" | "media" | "publicKey" | "note"
+  "login" | "pwd" | "epg" | "m3uPlaylist" | "media" | "publicKey" | "note" | "customMonetaryRewardAmount"
 > & {
   reason: string | null
   user: Pick<User, "login" | "pwd" | "role"> | null

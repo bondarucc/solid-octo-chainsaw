@@ -20,17 +20,18 @@ model User {
 }
 
 model Sub {
-  id                 String  @id @default(uuid())
-  externalId         String  @unique
-  login              String? @unique
-  pwd                String?
-  note               String?
-  attractorId        String?
-  m3uPlaylist        String?
-  epg                String?
-  publicKey          String?
-  media              String?
-  totalPayableReward Int     @default(0)
+  id                         String  @id @default(uuid())
+  externalId                 String  @unique
+  login                      String? @unique
+  pwd                        String?
+  note                       String?
+  attractorId                String?
+  m3uPlaylist                String?
+  epg                        String?
+  publicKey                  String?
+  media                      String?
+  totalPayableReward         Int     @default(0)
+  customMonetaryRewardAmount Int?
 
   //relations
   user User?
@@ -89,19 +90,17 @@ model SPE_AE {
 }
 
 model SRT_AE {
-  id                     String             @id @default(uuid())
-  sub                    Sub                @relation(fields: [subId], references: [id])
-  subId                  String
-  // secondarySubsAmount    Int
-  // directSubsAmount       Int
-  // totalTier              Int
-  rewardType             MonetaryRewardType
-  timestamp              DateTime
-  sc_ae                  SC_AE              @relation(fields: [sc_ae_id], references: [id])
-  sc_ae_id               String
-  rewardAmount           Int
-  prevTotalPayableReward Int
-  newTotalPayableReward  Int
+  id                         String             @id @default(uuid())
+  sub                        Sub                @relation(fields: [subId], references: [id])
+  subId                      String
+  customMonetaryRewardAmount Int?
+  rewardType                 MonetaryRewardType
+  timestamp                  DateTime
+  sc_ae                      SC_AE              @relation(fields: [sc_ae_id], references: [id])
+  sc_ae_id                   String
+  rewardAmount               Int
+  prevTotalPayableReward     Int
+  newTotalPayableReward      Int
 
   @@map("SubRewardTriggeredAuditEvent")
 }

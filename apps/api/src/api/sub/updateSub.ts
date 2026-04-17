@@ -15,7 +15,7 @@ export default async function updateSub(id: string, inputData: SubUpdateRequestB
   })
 
   return await prisma.$transaction(async trn => {
-    const { epg, login, m3uPlaylist, media, note, package: pkg, publicKey, pwd, reason, user } = inputData
+    const { epg, login, m3uPlaylist, media, note, package: pkg, publicKey, pwd, reason, user, customMonetaryRewardAmount } = inputData
     const { endDate, paymentAmount, paymentCurr, paymentDate, pkgType, region, startDate } = pkg
     const newSubData = await trn.sub.update({
       where: {
@@ -34,6 +34,7 @@ export default async function updateSub(id: string, inputData: SubUpdateRequestB
         media,
         note,
         publicKey,
+        customMonetaryRewardAmount,
         package: {
           update: {
             paymentAmount,
@@ -49,9 +50,10 @@ export default async function updateSub(id: string, inputData: SubUpdateRequestB
       }
     })
 
-    await trn.sU_AE.create({
+    const diff = whatHasChanged(oldSubData, newSubData)
+    diff && await trn.sU_AE.create({
       data: {
-        diff: JSON.stringify(whatHasChanged(oldSubData, newSubData)),
+        diff: JSON.stringify(diff),
         timestamp: new Date(),
         reason,
         sub: {
@@ -154,8 +156,5 @@ function whatHasChanged(oldSub: SubWithPkgAndUser, newSub: SubWithPkgAndUser) {
     }
   }
 
-  return result
-
-
-
+  return JSON.stringify(result) === '{"package":{},"user":{}}' ? null : result
 }

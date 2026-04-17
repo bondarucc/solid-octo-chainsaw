@@ -12,7 +12,7 @@ import CreateSubForm from "./CreateSubForm.tsx"
 
 function formValuesToRequestBody(formValues: CreateSubFormShape): CreateSubRequestBody {
 
-  const { user, epg, m3uPlaylist, note, package: pkg, externalId, login, pwd, media, publicKey, attractor } = formValues
+  const { user, epg, m3uPlaylist, note, package: pkg, externalId, login, pwd, media, publicKey, attractor, customMonetaryRewardAmount } = formValues
   if (!externalId) throw "Пустой сторонний ID"
   const userToSubmit = userValidateAndTransform(user)
   const pkgToSubmit = packageValidateAndTransform(pkg)
@@ -28,7 +28,8 @@ function formValuesToRequestBody(formValues: CreateSubFormShape): CreateSubReque
     epg: epg ?? undefined,
     media: media ?? undefined,
     publicKey: publicKey ?? undefined,
-    attractor: attractorToSubmit
+    attractor: attractorToSubmit,
+    customMonetaryRewardAmount
   }
 
 }
