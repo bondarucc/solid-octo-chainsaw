@@ -73,7 +73,7 @@ function eventToString(event: GetSubAuditEventsResponseBody[number]): ReactNode 
                     items={Object.entries({ ...rest, ...pkg, ...(user.login ? { partnerLogin: user.login } : {}), ...(user.pwd ? { partnerPwd: user.pwd } : {}), ...(user.role ? { partnerRole: user.role } : {}) }).map(([key, value]: [any, any]) => {
 
                       const { prevValue, newValue } = ["paymentDate", "startDate", "endDate"].includes(key)
-                        ? { prevValue: dayjs(value.prevValue).format("MM.DD.YYYY"), newValue: dayjs(value.newValue).format("MM.DD.YYYY") }
+                        ? { prevValue: value.prevValue && dayjs(value.prevValue).format("MM.DD.YYYY"), newValue: dayjs(value.newValue).format("MM.DD.YYYY") }
                         : value
 
                       return {
