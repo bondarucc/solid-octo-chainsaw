@@ -60,6 +60,11 @@ export const GET_SUBS_ARGS = {
       select: {
         externalId: true
       }
+    },
+    sc_ae: {
+      select: {
+        timestamp: true
+      }
     }
   }
 } satisfies Prisma.SubDefaultArgs

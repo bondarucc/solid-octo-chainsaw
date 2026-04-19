@@ -67,9 +67,10 @@ export default function SubsTable() {
         title: "Привлеченные абоненты",
         align: "center",
         render(sub: SubItem) {
+          
           return sub.attractedSubs.length
             ? (
-              <Badge count={sub.attractedSubs.length} size="small" color="black" >
+              <Badge count={sub.attractedSubs.length} size="default" color="#ddd" style={{color: "black", }} >
                 <Button
                   onClick={() => {
                     filtersForm.resetFields()
@@ -113,7 +114,37 @@ export default function SubsTable() {
         title: "Роль",
         key: "role",
         /* tslint:disable */
-        render: (sub: SubItem) => sub.user?.role ? TRNS.ROLE[sub.user.role] : "Абонент"
+        render: (sub: SubItem) => sub.user?.role ? TRNS.ROLE[sub.user.role] : "Абонент",
+        defaultSortOrder: "descend",
+        sorter: {
+          multiple: 2,
+          compare: (a, b) => {
+            const {user: userA} = a
+            const {user: userB} = b
+            if (userA == null && userB == null) return 0
+            if (!userA) return -1
+            if (!userB) return 1
+            if (userA.role === userB.role) return 0
+            return userA.role.toLowerCase() > userB.role.toLowerCase() ? -1 : 1
+          }
+        }
+      },
+      {
+        title: "Дата подключения",
+        key: "createdAt",
+        /* tslint:disable */
+        render: (sub: SubItem) => sub.sc_ae ? dayjs(sub.sc_ae.timestamp).format("DD.MM.YYYY") : null,
+        defaultSortOrder: "descend",
+        sorter: {
+          multiple: 1,
+          compare: (a, b) => {
+            const {sc_ae: sc_aeA} = a
+            const {sc_ae: sc_aeB} = b
+            if (!sc_aeA) return -1
+            if (!sc_aeB) return 1
+            return dayjs(sc_aeA.timestamp).isAfter(dayjs(sc_aeB.timestamp)) ? 1 : -1
+          }
+        }
       },
       {
         dataIndex: "totalPayableReward",
@@ -187,7 +218,7 @@ export default function SubsTable() {
       <Table<SubItem>
         scroll={{ x: true }}
         pagination={{
-
+          
         }}
         onRow={(sub) => ({
           onClick: () => {
@@ -202,6 +233,7 @@ export default function SubsTable() {
           },
         })}
         rowKey={sub => sub.externalId}
+        // dataSource={[...allSubs].reverse()}
         dataSource={allSubs}
         columns={columns}
       />
