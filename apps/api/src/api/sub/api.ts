@@ -1,10 +1,11 @@
 import express, { type Request } from "express"
+import { normaliseSearchQuery } from "../../helpers.js"
 import { prisma } from "../../initDB.js"
-import createNewSub from "./createNewSub.js"
-import { GET_SUBS_ARGS, type GetSubAuditEventsResponseBody, type GetSubsListResponseBody } from "./types.js"
-import { sortAuditEventsByTimestamp } from "./helpers.js"
-import { extendSubPackage } from "./extendSubPackage.js"
 import { adminMiddleware } from "../auth/adminWiddleware.js"
+import createNewSub from "./createNewSub.js"
+import { extendSubPackage } from "./extendSubPackage.js"
+import { sortAuditEventsByTimestamp } from "./helpers.js"
+import { GET_SUBS_ARGS, type GetSubAuditEventsResponseBody, type GetSubsListResponseBody } from "./types.js"
 import updateSub from "./updateSub.js"
 
 const router = express.Router()
@@ -20,18 +21,24 @@ router.use(PATH, adminMiddleware, secureInnerRouter)
 
 // Get all subs
 secureInnerRouter.get(`/full`, async (req: Request<{}, {}, {}, { externalId: string, attractorId: string, login: string }>, res) => {
-  const { externalId, attractorId, login } = req.query
+  const { externalId, attractorId, login } = normaliseSearchQuery(req.query)
 
   const result: GetSubsListResponseBody = await prisma.sub.findMany({
     ...GET_SUBS_ARGS,
     where: {
-      externalId: externalId ? externalId : undefined,
-      attractedBy: attractorId ? {
-        externalId: attractorId
-      } : undefined,
-      user: login ? {
-        login
-      } : undefined
+      externalId: externalId && {
+        contains: externalId
+      },
+      attractedBy: {
+        externalId: attractorId && {
+          contains: attractorId
+        }
+      },
+      user: {
+        login: login && {
+          contains: login
+        }
+      }
     }
   })
   res.json(result)
