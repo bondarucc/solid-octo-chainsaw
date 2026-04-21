@@ -1,4 +1,3 @@
-import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3';
 import "dotenv/config";
 import { PrismaMariaDb } from "@prisma/adapter-mariadb";
 
@@ -18,6 +17,7 @@ const adapter = new PrismaMariaDb({
   password: process.env.DATABASE_PASSWORD,
   database: process.env.DATABASE_NAME,
   connectionLimit: 5,
+
 });
 const prisma = new PrismaClient({ adapter });
 export {prisma}
