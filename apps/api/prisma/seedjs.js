@@ -33,7 +33,7 @@ export default async function seed() {
     externalId,
     user: {
       login: externalId,
-      pwd: "pwd",
+      pwd: pwd,
       role: "ADMIN"
     },
     package: {
