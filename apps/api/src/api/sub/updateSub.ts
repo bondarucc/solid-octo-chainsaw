@@ -1,7 +1,7 @@
 import { hashSync } from "bcrypt";
-import { Package, Prisma, Sub, User } from "../../../generated/prisma/index.js";
+import type { Package, Prisma, Sub, User } from "../../../generated/prisma/index.js";
 import { prisma } from "../../initDB.js";
-import { SubUpdateRequestBody } from "./types.js";
+import type { SubUpdateRequestBody } from "./types.js";
 
 export default async function updateSub(id: string, inputData: SubUpdateRequestBody) {
   const oldSubData = await prisma.sub.findFirstOrThrow({
