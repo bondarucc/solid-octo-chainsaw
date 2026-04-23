@@ -7,6 +7,7 @@ import { extendSubPackage } from "./extendSubPackage.js"
 import { sortAuditEventsByTimestamp } from "./helpers.js"
 import { GET_SUBS_ARGS, type GetSubAuditEventsResponseBody, type GetSubsListResponseBody } from "./types.js"
 import updateSub from "./updateSub.js"
+import { Role } from "../../../generated/prisma/index.js"
 
 const router = express.Router()
 
@@ -20,9 +21,9 @@ router.use(PATH, adminMiddleware, secureInnerRouter)
 
 
 // Get all subs
-secureInnerRouter.get(`/full`, async (req: Request<{}, {}, {}, { externalId: string, attractorId: string, login: string }>, res) => {
-  const { externalId, attractorId, login } = normaliseSearchQuery(req.query)
-
+secureInnerRouter.get(`/full`, async (req: Request<{}, {}, {}, { externalId: string, attractorId: string, login: string, role: Role | "NONE" }>, res) => {
+  const { externalId, attractorId, login, role } = normaliseSearchQuery(req.query)
+  
   const result: GetSubsListResponseBody = await prisma.sub.findMany({
     ...GET_SUBS_ARGS,
     where: {
@@ -34,11 +35,14 @@ secureInnerRouter.get(`/full`, async (req: Request<{}, {}, {}, { externalId: str
           contains: attractorId
         }
       },
-      user: {
-        login: login && {
-          contains: login
-        }
-      }
+      user: role == "NONE"
+        ? null
+        : {
+          login: login && {
+            contains: login
+          },
+          role: role
+        },
     }
   })
   res.json(result)
@@ -200,9 +204,9 @@ innerRouter.get(`/mySubs`, async (req, res) => {
 
 secureInnerRouter.post(`/:id/repayment`, async (req, res) => {
   const subId = req.params.id
-  const {repaymentAmount} = req.body
+  const { repaymentAmount } = req.body
 
-  const {totalPayableReward: currentTotalPayableReward} = await prisma.sub.findFirstOrThrow({
+  const { totalPayableReward: currentTotalPayableReward } = await prisma.sub.findFirstOrThrow({
     where: {
       id: subId
     }
@@ -234,12 +238,12 @@ secureInnerRouter.post(`/:id/repayment`, async (req, res) => {
 
 // update sub
 secureInnerRouter.post("/:id", async (req, res) => {
-  
+
   res.json(await updateSub(req.params.id, req.body))
 })
 
 secureInnerRouter.post("/:id/userAssign", async (req, res) => {
-  const {login, pwd, role} = req.body
+  const { login, pwd, role } = req.body
   await prisma.sub.update({
     where: {
       externalId: req.params.id

@@ -1,10 +1,7 @@
-export function normaliseSearchQuery(query: Record<string, any>) {
-  const result: typeof query = {}
+export function normaliseSearchQuery<T extends {}>(query: T): Partial<T> {
+  const result = {...query}
   for (const k in query) {
-    if (
-      query[k] !== null
-      && query[k] !== ""
-    ) result[k] = query[k]
+    if (query[k] !== "") result[k] = query[k]
   }
 
   return result

@@ -39,10 +39,8 @@ export async function getPartnersList(): Promise<GetUsersListResponseBody> {
 }
 
 export async function getFullSubsList(filter: Filters): Promise<GetSubsListResponseBody> {
-  const query = new URLSearchParams(Object.entries(filter).filter(pair => Boolean(pair[1])))
+  const query = new URLSearchParams(Object.entries(filter).filter(pair => pair[1] !== undefined && pair[1] !== ""))
   return fetchWrapper("/subs/full?" + query.toString())
-  // console.log(response);
-  // return response
 }
 
 export async function getAssignableSubs(): Promise<GetAssignableSubsResponseBody> {
