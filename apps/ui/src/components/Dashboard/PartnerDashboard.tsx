@@ -1,27 +1,36 @@
 import { Descriptions, Table, type GetProp } from "antd"
 import dayjs from "dayjs"
 import { useEffect, useState } from "react"
-import { useRouteLoaderData } from "react-router"
 import type { Package, Sub } from "../../../../api/generated/prisma/index"
 import { getMySubs } from "../../api/api"
-import type { AuthContextShape } from "../AuthProvider/types"
+import useUserData from "../../hooks/useUserData"
 
 function PartnerDashboard() {
+  const { userData } = useUserData()
+
   const descItems: GetProp<typeof Descriptions, "items"> = [
     {
-      label: "login",
-      children: "login prop"
+      label: "Общий бонус к оплате",
+      children: userData?.sub?.totalPayableReward,
+      span: 1,
     },
-    {
-      label: "Total payable reward",
-      children: "tpr prop"
-    }
+    ...(userData?.sub?.customMonetaryRewardAmount
+      ? [
+        {
+          label: "Спец условия",
+          children: userData.sub.customMonetaryRewardAmount,
+          span: 1,
+        }
+      ]
+      : []
+    )
   ]
 
   return (
     <>
       <Descriptions
         bordered
+        size="small"
         items={descItems}
         column={{ xs: 1, sm: 2, md: 3 }}
         style={{ marginBottom: 12 }}
@@ -39,15 +48,15 @@ type SubItem = Pick<Sub, "epg" | "m3uPlaylist" | "login" | "pwd" | "media" | "pu
 }
 
 
-function MySubsTable() {  
+function MySubsTable() {
   const columns: GetProp<typeof Table<SubItem>, "columns"> = [
     {
       dataIndex: "externalId",
-      title: "externalId",
+      title: "Внешний ID",
       key: "externalId"
     },
     {
-      title: "endDate",
+      title: "Оплачен до",
       key: "endDate",
       render: (sub: SubItem) => dayjs(sub.package.endDate).format("DD.MM.YYYY")
     },
@@ -58,40 +67,39 @@ function MySubsTable() {
     },
     {
       dataIndex: "pwd",
-      title: "pwd",
+      title: "Пароль",
       key: "pwd"
     },
     {
       dataIndex: "epg",
-      title: "epg",
+      title: "EPG",
       key: "epg"
     },
     {
       dataIndex: "m3uPlaylist",
-      title: "m3uPlaylist",
+      title: "M3U",
       key: "m3uPlaylist"
     },
     {
       dataIndex: "media",
-      title: "media",
+      title: "Медиатека",
       key: "media"
     },
     {
       dataIndex: "publicKey",
-      title: "publicKey",
+      title: "Публичный ключ",
       key: "publicKey"
     },
-    
   ]
 
-  const [ mySubs, setMySubs ] = useState<SubItem[]>([])
+  const [mySubs, setMySubs] = useState<SubItem[]>([])
 
   useEffect(() => {
     getMySubs().then(subs => setMySubs(subs));
-    
+
   }, [])
 
   return (
-    <Table<SubItem> columns={columns} dataSource={mySubs} scroll={{x: true}}/>
+    <Table<SubItem> columns={columns} dataSource={mySubs} scroll={{ x: true }} rowKey={sub => sub.externalId} />
   )
 }
