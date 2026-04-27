@@ -25,7 +25,7 @@ innerRouter.post(`/login`, async (req, res) => {
     throw new UnauthorizedError()
   }
 
-  const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '1h' })
+  const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '6h' })
 
   res.cookie('auth_token', token, {
     httpOnly: true,

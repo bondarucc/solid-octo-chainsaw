@@ -1,16 +1,15 @@
 // import './App.css'
 
-import { Button, Flex, Layout, Modal } from "antd"
-import AuthProvider, { useAuthCtx } from "./components/AuthProvider/AuthProvider"
-import DashboardRouter from "./components/Dashboard/DashboardRouter"
-import { Suspense, useCallback, useEffect, type PropsWithChildren } from "react"
-import { logout, login, getMe } from "./api/api"
-import { Await, createBrowserRouter, Link, NavLink, Outlet, redirect, useLoaderData, useNavigate, useNavigation, useRouteError, useRouteLoaderData, } from "react-router";
-import { RouterProvider } from "react-router/dom";
-import LoginPage from "./components/AuthProvider/LoginPage"
-import type { AuthContextShape } from "./components/AuthProvider/types"
-import TopBar from "./components/TopBar"
 import { ReloadOutlined } from "@ant-design/icons"
+import { Button } from "antd"
+import { useEffect, type PropsWithChildren } from "react"
+import { createBrowserRouter, Link, Outlet, redirect, useNavigate, useRouteError } from "react-router"
+import { RouterProvider } from "react-router/dom"
+import { getMe, login } from "./api/api"
+import LoginPage from "./components/AuthProvider/LoginPage"
+import DashboardRouter from "./components/Dashboard/DashboardRouter"
+import { InactivityGuard } from "./components/InactivityGuard"
+import TopBar from "./components/TopBar"
 import useUserData from "./hooks/useUserData"
 
 
@@ -27,7 +26,7 @@ const router = createBrowserRouter([
     id: "root",
     errorElement: <ErrorBoundary />,
     // shouldRevalidate: () => false,
-    loader: async () => {      
+    loader: async () => {
       return await getMe()
     },
     element: <Outlet />,
@@ -49,6 +48,7 @@ const router = createBrowserRouter([
       {
         element: (
           <AuthProtectedRoute>
+            <InactivityGuard />
             <TopBar />
             <div style={{ paddingInline: "12px", paddingTop: "12px", width: "100%", boxSizing: "border-box", overflow: "hidden" }}>
               <Outlet />
@@ -67,9 +67,9 @@ const router = createBrowserRouter([
 
 ])
 
-function AuthProtectedRoute({children}: PropsWithChildren) {
-  const {userData, error} = useUserData()
-  const navigate = useNavigate()  
+function AuthProtectedRoute({ children }: PropsWithChildren) {
+  const { userData, error } = useUserData()
+  const navigate = useNavigate()
 
   useEffect(() => {
     if (!userData || error) navigate("/login")
@@ -81,7 +81,12 @@ function AuthProtectedRoute({children}: PropsWithChildren) {
 
 
 function App() {
-  return <RouterProvider router={router} />
+
+  return <>
+
+    <RouterProvider router={router} />
+  </>
+
 }
 
 export default App
