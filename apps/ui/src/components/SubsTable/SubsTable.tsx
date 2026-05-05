@@ -67,19 +67,21 @@ export default function SubsTable() {
         title: "Привлеченные абоненты",
         align: "center",
         render(sub: SubItem) {
-          
+
           return sub.attractedSubs.length
             ? (
-              <Badge count={sub.attractedSubs.length} size="default" color="#ddd" style={{color: "black", }} >
-                <Button
-                  onClick={() => {
-                    filtersForm.resetFields()
-                    filtersForm.setFieldsValue({ attractorId: sub.externalId })
-                    filtersForm.submit()
-                  }}
-                  icon={<DownOutlined />}
-                />
-              </Badge>
+              <ClickGuard>
+                <Badge count={sub.attractedSubs.length} size="default" color="#ddd" style={{ color: "black", }} >
+                  <Button
+                    onClick={() => {
+                      filtersForm.resetFields()
+                      filtersForm.setFieldsValue({ attractorId: sub.externalId })
+                      filtersForm.submit()
+                    }}
+                    icon={<DownOutlined />}
+                  />
+                </Badge>
+              </ClickGuard>
             )
             : null
         },
@@ -89,19 +91,22 @@ export default function SubsTable() {
         title: "Реферал",
         render(attractor: SubItem) {
           if (attractor.attractedBy == null) return
-          return <span style={{ whiteSpace: "nowrap" }}>
-
-            <Button
-              onClick={() => {
-                filtersForm.resetFields()
-                filtersForm.setFieldsValue({ externalId: attractor.attractedBy?.externalId })
-                filtersForm.submit()
-              }}
-              icon={<UpOutlined />}
-            >
-              {attractor.attractedBy.externalId}
-            </Button>
-          </span>
+          return (
+            <ClickGuard>
+              <span style={{ whiteSpace: "nowrap" }}>
+                <Button
+                  onClick={() => {
+                    filtersForm.resetFields()
+                    filtersForm.setFieldsValue({ externalId: attractor.attractedBy?.externalId })
+                    filtersForm.submit()
+                  }}
+                  icon={<UpOutlined />}
+                >
+                  {attractor.attractedBy.externalId}
+                </Button>
+              </span>
+            </ClickGuard>
+          )
         },
       },
       {
@@ -119,8 +124,8 @@ export default function SubsTable() {
         sorter: {
           multiple: 2,
           compare: (a, b) => {
-            const {user: userA} = a
-            const {user: userB} = b
+            const { user: userA } = a
+            const { user: userB } = b
             if (userA == null && userB == null) return 0
             if (!userA) return -1
             if (!userB) return 1
@@ -138,8 +143,8 @@ export default function SubsTable() {
         sorter: {
           multiple: 1,
           compare: (a, b) => {
-            const {sc_ae: sc_aeA} = a
-            const {sc_ae: sc_aeB} = b
+            const { sc_ae: sc_aeA } = a
+            const { sc_ae: sc_aeB } = b
             if (!sc_aeA) return -1
             if (!sc_aeB) return 1
             return dayjs(sc_aeA.timestamp).isAfter(dayjs(sc_aeB.timestamp)) ? 1 : -1
