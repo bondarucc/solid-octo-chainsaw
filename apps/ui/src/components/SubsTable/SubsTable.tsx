@@ -218,7 +218,8 @@ export default function SubsTable() {
       <Table<SubItem>
         scroll={{ x: true }}
         pagination={{
-          
+          showSizeChanger: true,
+          showTotal: (total, range) => `${range[0]} - ${range[1]} из ${total}`
         }}
         onRow={(sub) => ({
           onClick: () => {
