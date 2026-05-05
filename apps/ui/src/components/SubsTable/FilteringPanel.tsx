@@ -17,7 +17,7 @@ interface FilteringPanelProps {
   onSearch: () => void
 }
 
-const RoleFieldOptions: GetProp<typeof Segmented, "options"> = [
+const roleFieldOptions: GetProp<typeof Segmented, "options"> = [
   {
     label: "Админ",
     value: "ADMIN"
@@ -30,6 +30,17 @@ const RoleFieldOptions: GetProp<typeof Segmented, "options"> = [
     label: "Абонент",
     value: "NONE"
   },
+]
+
+const pkgStatusOptions: GetProp<typeof Segmented, "options"> = [
+  {
+    label: "Активный",
+    value: "ACTIVE"
+  },
+  {
+    label: "Неактивный",
+    value: "INACTIVE"
+  }
 ]
 
 export default function FilteringPanel({ onSearch }: FilteringPanelProps) {
@@ -46,15 +57,21 @@ export default function FilteringPanel({ onSearch }: FilteringPanelProps) {
           <Pill label="Внешний ID" name="externalId">
             <TextSearchField name="externalId" />
           </Pill>
+
           <Pill label="Логин" name="login">
             <TextSearchField name="login" />
           </Pill>
+
           <Pill label="Реферал" name="attractorId">
             <TextSearchField name="attractorId" />
           </Pill>
 
           <Pill label="Роль" name="role">
-            <SegmentedSelectField name={["role"]} options={RoleFieldOptions} />
+            <SegmentedSelectField name={["role"]} options={roleFieldOptions} />
+          </Pill>
+
+          <Pill label="Статус" name="pkgStatus">
+            <SegmentedSelectField name={["pkgStatus"]} options={pkgStatusOptions} />
           </Pill>
         </Row>
 
