@@ -10,7 +10,10 @@ function LoginPage() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    if (userData) navigate("/dashboard", {replace: true})
+    if (userData) {
+      const route = userData.role === "ADMIN" ? "admin" : "partner"
+      navigate(`/${route}/dashboard`, {replace: true})
+    }
   }, [userData, navigate])
   
 

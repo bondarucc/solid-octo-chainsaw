@@ -3,20 +3,26 @@
 import { ReloadOutlined } from "@ant-design/icons"
 import { Button } from "antd"
 import { useEffect, type PropsWithChildren } from "react"
-import { createBrowserRouter, Link, Outlet, redirect, useNavigate, useRouteError } from "react-router"
+import { createBrowserRouter, Link, Navigate, Outlet, redirect, useNavigate, useRouteError } from "react-router"
 import { RouterProvider } from "react-router/dom"
 import { getMe, login } from "./api/api"
 import LoginPage from "./components/AuthProvider/LoginPage"
 import DashboardRouter from "./components/Dashboard/DashboardRouter"
 import { InactivityGuard } from "./components/InactivityGuard"
 import TopBar from "./components/TopBar"
+import Stats from "./components/Stats/Stats"
 import useUserData from "./hooks/useUserData"
+import AdminDashboard from "./components/Dashboard/AdminDashboard"
+import PartnerDashboard from "./components/Dashboard/PartnerDashboard"
 
 
 
 const router = createBrowserRouter([
   {
-    path: "/",
+    path: "*",
+    element: <Navigate to="/login" replace />
+  },
+  {
     hydrateFallbackElement: "Loading...",
     // middleware: [
     //   async ({request}) => {
@@ -42,7 +48,6 @@ const router = createBrowserRouter([
           const pwd = formData.get("pwd") as string
           const result = await login({ login: username, pwd })
           if (result.error) return "Wrong login or password"
-          throw redirect("/dashboard")
         }
       },
       {
@@ -57,9 +62,23 @@ const router = createBrowserRouter([
         ),
         children: [
           {
-            path: "dashboard",
-            element: <DashboardRouter />
+            path: "admin",
+            element: <AdminRoleGuard><Outlet /></AdminRoleGuard>,
+            children: [
+              {
+                path: "dashboard",
+                element: <AdminDashboard />
+              },
+              {
+                path: "stats",
+                element: <Stats />
+              }
+            ]
           },
+          {
+            path: "partner/dashboard",
+            element: <PartnerDashboard />
+          }
         ]
       },
     ]
@@ -75,6 +94,15 @@ function AuthProtectedRoute({ children }: PropsWithChildren) {
     if (!userData || error) navigate("/login")
   }, [userData, navigate])
 
+
+  return children
+}
+
+function AdminRoleGuard({ children }: PropsWithChildren) {
+  const { userData, error } = useUserData()
+  const navigate = useNavigate()
+
+  if (error || !userData || userData.role !== "ADMIN") navigate("/login")
 
   return children
 }
@@ -114,7 +142,7 @@ function ErrorBoundary() {
 
           <span>Что-то пошло не так</span>
           <br />
-          <Link to="/dashboard">
+          <Link to="/login">
             <Button icon={<ReloadOutlined />} style={{ marginTop: 24 }}>
               Перезагрузить
             </Button>
