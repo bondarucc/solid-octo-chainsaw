@@ -52,27 +52,17 @@ export default function FilteringPanel({ onSearch }: FilteringPanelProps) {
 
   return (
     <Form form={filtersForm} onFinish={onSearchClick} onReset={onSearch}>
-      <div style={{ boxShadow: "0px 0px 5px grey", padding: 6, borderRadius: 12, maxWidth: 1000}}>
+      <div style={{ boxShadow: "0px 0px 5px grey", padding: 6, borderRadius: 12, maxWidth: 1000 }}>
         <Row gutter={["12px", "12px"]} style={{ marginBottom: 12 }}>
-          <Pill label="Внешний ID" name="externalId">
-            <TextSearchField name="externalId" />
-          </Pill>
+          <TextSearchField name="externalId" label="Внешний ID" />
 
-          <Pill label="Логин" name="login">
-            <TextSearchField name="login" />
-          </Pill>
+          <TextSearchField name="login" label="Логин" />
 
-          <Pill label="Реферал" name="attractorId">
-            <TextSearchField name="attractorId" />
-          </Pill>
+          <TextSearchField name="attractorId" label="Реферал" />
 
-          <Pill label="Роль" name="role">
-            <SegmentedSelectField name={["role"]} options={roleFieldOptions} />
-          </Pill>
+          <SegmentedSelectField label="Роль" name="role" options={roleFieldOptions} />
 
-          <Pill label="Статус" name="pkgStatus">
-            <SegmentedSelectField name={["pkgStatus"]} options={pkgStatusOptions} />
-          </Pill>
+          <SegmentedSelectField label="Статус" name="pkgStatus" options={pkgStatusOptions} />
         </Row>
 
         <div style={{ maxWidth: 250 }}>
@@ -124,51 +114,56 @@ function Pill({ label, name, children }: PillProps) {
   )
 }
 
-function TextSearchField({ name }: { name: string }) {
+function TextSearchField({ name, label }: { name: string, label: string }) {
   return (
-    <div style={{ backgroundColor: "white", flexGrow: "1", paddingInline: 5 }}>
-      <Item
-        name={name}
-        noStyle
-      >
-        <Input
-          style={{ color: "var(--ant-blue)", width: "95%", border: "none", boxShadow: "none", padding: 0 }}
-        />
-      </Item>
-    </div>
+    <Pill label={label} name={name}>
+      <div style={{ backgroundColor: "white", flexGrow: "1", paddingInline: 5 }}>
+        <Item
+          name={name}
+          noStyle
+        >
+          <Input
+            style={{ color: "var(--ant-blue)", width: "95%", border: "none", boxShadow: "none", padding: 0 }}
+          />
+        </Item>
+      </div>
+    </Pill>
   )
 }
 
 type SegmentedSelectFieldProps = {
   options: GetProp<typeof Segmented, "options">
-  name: string[]
+  name: string
+  label: string
 }
 
-function SegmentedSelectField({ name, options }: SegmentedSelectFieldProps) {
+function SegmentedSelectField({ name, options, label }: SegmentedSelectFieldProps) {
   const form = Form.useFormInstance()
-  const currentValue = Form.useWatch(name)
+  const currentValue = Form.useWatch([name])
 
   const onSelect = useCallback<GetProp<typeof Segmented, "onChange">>(v => {
     form.setFieldValue(name, v)
   }, [form])
 
   return (
-    <div style={{ backgroundColor: "white", flexGrow: "1", paddingInline: 0 }}>
-      <Item noStyle name={name} />
-      <ConfigProvider theme={{components: {Segmented: {itemSelectedBg: "rgb(0, 0, 0, 0.1)"}} }}>
-        <Segmented
-          options={options}
-          value={currentValue ?? null}
-          size="medium"
-          block
-          styles={{ 
-            root: { borderRadius: 0, padding: 0, backgroundColor: "transparent"},
-            item: { borderRadius: 0 }
-          }}
-          onChange={onSelect}
-        />
+    <Pill label={label} name={name}>
+      <div style={{ backgroundColor: "white", flexGrow: "1", paddingInline: 0 }}>
+        <Item noStyle name={name} />
+        <ConfigProvider theme={{ components: { Segmented: { itemSelectedBg: "rgb(0, 0, 0, 0.1)" } } }}>
+          <Segmented
+            options={options}
+            value={currentValue ?? null}
+            size="medium"
+            block
+            styles={{
+              root: { borderRadius: 0, padding: 0, backgroundColor: "transparent" },
+              item: { borderRadius: 0 }
+            }}
+            onChange={onSelect}
+          />
 
-      </ConfigProvider>
-    </div>
+        </ConfigProvider>
+      </div>
+    </Pill>
   )
 }
