@@ -88,10 +88,12 @@ export default function FilteringPanel({ onSearch }: FilteringPanelProps) {
   )
 }
 
-type PillProps = PropsWithChildren & {
-  label: string
-  name: string
-}
+type PillProps = PropsWithChildren<
+  {
+    label: string
+    name: string
+  }
+>
 
 function Pill({ label, name, children }: PillProps) {
   const form = Form.useFormInstance()
