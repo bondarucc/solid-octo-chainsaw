@@ -9,6 +9,7 @@ import { InternalError } from "./errorDict.js";
 import { app } from "./initApp.js";
 import { userRouter } from "./api/user/api.js";
 import { subRouter } from "./api/sub/api.js";
+import { reportRouter } from "./api/report/api.js";
 
 export {app}
 
@@ -20,14 +21,14 @@ app.use(cookieParser())
 // mainRouter.use("/api")
 // app.use(authMiddleware)
 
-app.use("/api", authMiddleware, authRouter, subRouter)
+app.use("/api", authMiddleware, authRouter, subRouter, reportRouter)
 // app.use("/sec", adminMiddleware)
 // app.use(userRouter)
 // app.use(subRouter)
 
 app.use(express.static("dist/ui"))
 
-app.use((req, res) => {
+app.use((req, res) => {  
   res.sendFile("dist/ui/index.html", {root: process.cwd()})
 })
 
