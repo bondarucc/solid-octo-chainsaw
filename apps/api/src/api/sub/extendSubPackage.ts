@@ -1,100 +1,180 @@
 import dayjs from "dayjs";
-import { SC_AE, type Sub } from "../../../generated/prisma/client.js";
-import { prisma } from "../../initDB.js"
+import type { RequestHandler } from "express";
+import type { Payment, Prisma, Sub, User } from "../../../generated/prisma/index.js";
+import { prisma } from "../../initDB.js";
 import { PrismaTrnClient } from "../types.js";
-import type { Prisma } from "../../../generated/prisma/index.js";
+import { ReplaceDatesWithStrings } from "./types.js";
+import { Locals } from "../auth/authMiddleware.js";
+
+const MAX_TIER = 25
+
+export type ExtendSubRequestBody = {
+  paymentDetails: ReplaceDatesWithStrings<Pick<Payment, "amount" | "currency" | "date">>
+}
+
+export type ExtendSubResponseBody = Sub
+
+export const extendSubPackage: RequestHandler<{ externalId: string }, ExtendSubResponseBody, ExtendSubRequestBody, null, Locals> = async (req, res) => {
+  const { externalId } = req.params
+  const { paymentDetails } = req.body
+  const {login: actor} = res.locals.userData
+
+  const updatedSub = await doExtend({ externalId, paymentDetails, actor })
 
 
+  res.json(updatedSub)
+}
 
-
-export async function extendSubPackage(id: Sub["id"]) {
-  const currentPkg = await prisma.package.findFirstOrThrow({
+async function doExtend(
+  {
+    externalId,
+    actor,
+    paymentDetails: { amount, currency, date }
+  }:
+    {
+      externalId: Sub["externalId"]
+      actor: User["login"]
+    } & ExtendSubRequestBody
+) {
+  const { endDate: prevEndDate } = await prisma.sub.findFirstOrThrow({
     where: {
-      subId: id
+      externalId
     },
   })
 
-  await prisma.$transaction(async trn => {
-    const newEndDate = dayjs(currentPkg.endDate).add(1, "y").toDate()
-    const { sub: extendedSub } = await trn.package.update({
-      where: {
-        id: currentPkg.id
-      },
+  return await prisma.$transaction(async trn => {
+    // extend from the previous end date or current date whichever is bigger
+    const baseDate = new Date(Math.max(new Date().getTime(), prevEndDate.getTime()))
+    const newEndDate = dayjs(baseDate).add(1, "y").toDate()
+
+    const newPayment = await trn.payment.create({
       data: {
-        endDate: newEndDate,
-        spe_ae: {
-          create: {
-            timestamp: new Date(),
-            newEndDate: newEndDate,
-            prevEndDate: currentPkg.endDate
-          }
-        }
-      },
-      select: {
+        amount,
+        currency,
+        date: new Date(date),
         sub: {
-          select: {
-            attractedBy: {
-              select: { id: true, totalPayableReward: true, customMonetaryRewardAmount: true, attractedSubs: true }
-            },
-            sc_ae: true
+          connect: {
+            externalId
+          }
+        },
+        createdAt: new Date()
+      }
+    })
+
+    const {id: spe_ae_id} = await trn.subPackageExtendedAuditEvent.create({
+      data: {
+        prevEndDate,
+        newEndDate,
+        reason: "PAID_EXTENSION",
+        createdAt: new Date(),
+        payment: {
+          connect: {
+            id: newPayment.id
+          }
+        },
+        createdBy: {
+          connect: {
+            login: actor
+          }
+        },
+        sub: {
+          connect: {
+            externalId
           }
         }
       }
     })
 
-    if (extendedSub.attractedBy && extendedSub.sc_ae) 
-      await processAttractor({ trn, attractor: extendedSub.attractedBy, sc_ae: extendedSub.sc_ae })
+
+    const updatedSub = await trn.sub.update({
+      where: {
+        externalId
+      },
+      data: {
+        endDate: newEndDate,
+      },
+      include: {
+        referalDetails: REWARD_ATTRACTOR_DATA_REQUIRED
+      }
+    })
+
+    if (updatedSub.referalDetails) {
+      await doRewardAttractor({ trn, referalDetails: updatedSub.referalDetails, spe_ae_id })
+    }
+
+    return updatedSub
 
   })
-
-  return
-
 }
 
-async function processAttractor({ sc_ae, trn, attractor }: { sc_ae: SC_AE, trn: PrismaTrnClient, attractor: Prisma.SubGetPayload<{ select: { id: true, totalPayableReward: true, customMonetaryRewardAmount: true, attractedSubs: true } }> }) {
-  const { attractorTier } = sc_ae
-  const { id: attractorId, totalPayableReward: prevTotalPayableReward, customMonetaryRewardAmount, attractedSubs } = attractor
-  const directSubsAmount = attractedSubs.length
-  const highestTierReached = directSubsAmount > 25
-  if (attractorTier == null || (attractorTier <= 5 && !highestTierReached)) return
-  const rewardAmount = customMonetaryRewardAmount !== null
-    ? customMonetaryRewardAmount
-    : highestTierReached
-      ? 25
-      : Math.min(25, Math.ceil(attractorTier / 5) * 5)
+const REWARD_ATTRACTOR_DATA_REQUIRED = { include: { attractor: { include: { attractedSubs: true } } } } as const
 
-  await trn.sub.update({
+async function doRewardAttractor(
+  { spe_ae_id, trn, referalDetails: { effectiveAttractorTier, attractedSubExternalId, attractorUserId, attractor: { attractedSubs, customMonetaryRewardAmount, totalPayableReward: prevTotalPayableReward } } }:
+    {
+      referalDetails: Prisma.ReferalDetailsGetPayload<typeof REWARD_ATTRACTOR_DATA_REQUIRED>
+      trn: PrismaTrnClient
+      spe_ae_id: string
+    }
+) {
+
+  const {rewardAmount, highestTierReached} = calculateRewardAmount({
+    attractedSubsAmount: attractedSubs.length,
+    effectiveAttractorTier,
+    customMonetaryRewardAmount
+  })
+
+  if (rewardAmount === 0) return
+
+  const { totalPayableReward: newTotalPayableReward } = await trn.user.update({
     data: {
       totalPayableReward: {
         increment: rewardAmount
       }
     },
     where: {
-      id: attractorId
+      login: attractorUserId
     }
   })
 
-  await trn.sRT_AE.create({
+  await trn.userRewardTriggeredAuditEvent.create({
     data: {
       rewardAmount,
       prevTotalPayableReward,
-      newTotalPayableReward: prevTotalPayableReward + rewardAmount,
+      newTotalPayableReward,
       rewardType: "SUB_EXT",
       customMonetaryRewardAmount,
       highestTierReached,
-      timestamp: new Date(),
-      sub: {
+      createdAt: new Date(),
+      referalDetails: {
         connect: {
-          id: attractorId
+          attractedSubExternalId
         }
       },
-      sc_ae: {
+      spe_ae: {
         connect: {
-          id: sc_ae.id
+          id: spe_ae_id
         }
       }
     }
   })
+}
 
+export function calculateRewardAmount({
+  attractedSubsAmount,
+  effectiveAttractorTier,
+  customMonetaryRewardAmount
+}: {
+  attractedSubsAmount: number,
+  effectiveAttractorTier: number,
+  customMonetaryRewardAmount: number | null
+} ) {
+  const highestTierReached = attractedSubsAmount > MAX_TIER
 
+  return {
+    rewardAmount: effectiveAttractorTier <= 5 && !highestTierReached
+      ? 0
+      : customMonetaryRewardAmount ?? Math.min(MAX_TIER, Math.ceil(effectiveAttractorTier / 5) * 5),
+    highestTierReached
+  }
 }

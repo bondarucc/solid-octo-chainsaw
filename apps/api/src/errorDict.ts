@@ -11,4 +11,8 @@ export class UnauthorizedError extends InternalError {
 
 export class ForbiddenError extends InternalError {
   code: String = "ForbiddenError"
+}
+
+export class InvalidReportInput extends InternalError {
+  code: String = "InvalidReportInput"
 } 

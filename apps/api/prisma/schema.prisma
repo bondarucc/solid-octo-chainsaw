@@ -11,122 +11,160 @@ datasource db {
 }
 
 model User {
-  id    String @id @default(uuid())
-  login String @unique
-  pwd   String
-  role  Role
-  sub   Sub    @relation(fields: [subId], references: [id])
-  subId String @unique
+  login                      String  @id
+  pwd                        String
+  role                       Role
+  subExternalId              String? @unique
+  totalPayableReward         Float   @default(0)
+  // totalAccumulatedReward     Float   @default(0)
+  // totalRepaymentsReceived    Float   @default(0)
+  customMonetaryRewardAmount Float?
+  note                       String? @db.Text
+
+  //relations
+  sub           Sub?                      @relation("relatedSub", fields: [subExternalId], references: [externalId])
+  attractedSubs ReferalDetails[]
+  ur_ae         UserRepaymentAuditEvent[]
+  createdSubs   Sub[]                     @relation("creator")
+  createdUsers  User[]                    @relation("UserOnUser")
+
+  createdAt       DateTime
+  createdBy       User?    @relation("UserOnUser", fields: [createdByUserId], references: [login])
+  createdByUserId String?
+
+  extensionsSubmitted    SubPackageExtendedAuditEvent[] @relation("extendedBy")
+  repaymentsSubmitted    UserRepaymentAuditEvent[]      @relation("repaidBy")
+  modificationsSubmitted EntityUpdatedAuditEvent[]
 }
 
 model Sub {
-  id                         String  @id @default(uuid())
-  externalId                 String  @unique
-  login                      String? @unique
-  pwd                        String?
-  note                       String?
-  attractorId                String?
-  m3uPlaylist                String?
-  epg                        String?
-  publicKey                  String?
-  media                      String?
-  totalPayableReward         Int     @default(0)
-  customMonetaryRewardAmount Int?
+  externalId  String  @id
+  login       String?
+  pwd         String?
+  note        String? @db.Text
+  m3uPlaylist String?
+  epg         String?
+  publicKey   String?
+  media       String?
+
+  //package
+  pkgType   PackageType?
+  startDate DateTime
+  endDate   DateTime
+  region    Region?
 
   //relations
-  user User?
+  user              User?                          @relation("relatedSub")
+  referalDetails    ReferalDetails?
+  payments          Payment[]
+  packageExtensions SubPackageExtendedAuditEvent[]
 
-  package Package?
-
-  attractedSubs Sub[] @relation("SubOnSub")
-  attractedBy   Sub?  @relation("SubOnSub", fields: [attractorId], references: [id])
-
-  //Audit event refs
-  sc_ae  SC_AE?
-  srt_ae SRT_AE[]
-  sr_ae  SR_AE[]
-  su_ae  SU_AE[]
-  // sssai_ae SSSAI_AE[]
+  createdAt       DateTime
+  createdBy       User     @relation("creator", fields: [createdByUserId], references: [login])
+  createdByUserId String
 }
 
-model Package {
-  id            String       @id @default(uuid())
-  pkgType       PackageType?
-  startDate     DateTime
-  endDate       DateTime
-  sub           Sub          @relation(fields: [subId], references: [id])
-  subId         String       @unique
-  region        Region?
-  paymentDate   DateTime?
-  paymentAmount Int?
-  paymentCurr   Currency?
-  spe_ae        SPE_AE[]
+model ReferalDetails {
+  attractedSubExternalId String @id
+  attractorUserId        String
+  effectiveAttractorTier Int
+
+  //relations
+  attractedSub Sub                             @relation(fields: [attractedSubExternalId], references: [externalId])
+  attractor    User                            @relation(fields: [attractorUserId], references: [login])
+  spe_ae       SubPackageExtendedAuditEvent?
+  urt_ae       UserRewardTriggeredAuditEvent[]
 }
 
-model SC_AE {
+model Payment {
   id            String   @id @default(uuid())
-  sub           Sub      @relation(fields: [subId], references: [id])
-  subId         String   @unique
-  attractorTier Int?
-  timestamp     DateTime
-  spe_ae        SPE_AE?
-  srt_ae        SRT_AE[]
-  // sssai_ae      SSSAI_AE[]
+  currency      Currency
+  amount        Float
+  date          DateTime
+  subExternalId String
 
-  @@map("SubCreatedAuditEvent")
+  //relations
+  sub    Sub                           @relation(fields: [subExternalId], references: [externalId])
+  spe_ae SubPackageExtendedAuditEvent?
+
+  createdAt DateTime
 }
 
-model SPE_AE {
-  id          String   @id @default(uuid())
-  package     Package  @relation(fields: [pkgId], references: [id])
-  pkgId       String
-  prevEndDate DateTime
-  newEndDate  DateTime
-  timestamp   DateTime
-  sc_ae       SC_AE?   @relation(fields: [sc_ae_id], references: [id])
-  sc_ae_id    String?  @unique
+model SubPackageExtendedAuditEvent {
+  id                     String                 @id @default(uuid())
+  prevEndDate            DateTime
+  newEndDate             DateTime
+  attractedSubExternalId String?                @unique
+  paymentId              String                 @unique
+  subExternalId          String
+  reason                 PackageExtensionReason
 
-  @@map("SubPackageExtendedAuditEvent")
+  //relations
+  //attractedSubReferalDetails must be populated in case of NEW_SUB_ATTRACTED type of extension
+  attractedSubReferalDetails ReferalDetails?                @relation(fields: [attractedSubExternalId], references: [attractedSubExternalId])
+  payment                    Payment                        @relation(fields: [paymentId], references: [id])
+  sub                        Sub                            @relation(fields: [subExternalId], references: [externalId])
+  urt_ae                     UserRewardTriggeredAuditEvent?
+
+  createdAt       DateTime
+  createdBy       User     @relation("extendedBy", fields: [createdByUserId], references: [login])
+  createdByUserId String
 }
 
-model SRT_AE {
-  id                         String             @id @default(uuid())
-  sub                        Sub                @relation(fields: [subId], references: [id])
-  subId                      String
-  customMonetaryRewardAmount Int?
-  rewardType                 MonetaryRewardType
-  timestamp                  DateTime
-  sc_ae                      SC_AE              @relation(fields: [sc_ae_id], references: [id])
-  sc_ae_id                   String
-  rewardAmount               Int
-  prevTotalPayableReward     Int
-  newTotalPayableReward      Int
-  highestTierReached         Boolean?
-
-  @@map("SubRewardTriggeredAuditEvent")
+enum PackageExtensionReason {
+  PAID_EXTENSION
+  NEW_SUB_ATTRACTED
 }
 
-model SR_AE {
-  id                     String   @id @default(uuid())
-  sub                    Sub      @relation(fields: [subId], references: [id])
-  subId                  String
-  timestamp              DateTime
-  repaymentAmount        Int
-  prevTotalPayableReward Int
-  newTotalPayableReward  Int
+model UserRewardTriggeredAuditEvent {
+  id                                    String             @id @default(uuid())
+  customMonetaryRewardAmount            Float?
+  rewardType                            MonetaryRewardType
+  rewardAmount                          Float
+  prevTotalPayableReward                Float
+  newTotalPayableReward                 Float
+  highestTierReached                    Boolean            @default(false)
+  referalDetails_attractedSubExternalId String
+  spe_ae_id                             String?            @unique
 
-  @@map("SubRepaymentAuditEvent")
+  //relations
+  referalDetails ReferalDetails @relation(fields: [referalDetails_attractedSubExternalId], references: [attractedSubExternalId])
+
+  //must be populated in case of SUB_EXT
+  spe_ae SubPackageExtendedAuditEvent? @relation(fields: [spe_ae_id], references: [id])
+
+  createdAt DateTime
 }
 
-model SU_AE {
-  id        String   @id @default(uuid())
-  sub       Sub      @relation(fields: [subId], references: [id])
-  subId     String
-  reason    String?
-  timestamp DateTime
-  diff      String
+model UserRepaymentAuditEvent {
+  id                     String @id @default(uuid())
+  userId                 String
+  repaymentAmount        Float
+  prevTotalPayableReward Float
+  newTotalPayableReward  Float
 
-  @@map("SubUpdatedtAuditEvent")
+  //relations
+  user User @relation(fields: [userId], references: [login])
+
+  createdAt       DateTime
+  createdBy       User     @relation("repaidBy", fields: [createdByUserId], references: [login])
+  createdByUserId String
+}
+
+model EntityUpdatedAuditEvent {
+  id              String      @id @default(uuid())
+  entityType      EntityTypes
+  entityId        String
+  reason          String?
+  diff            String @db.Text
+  createdAt       DateTime
+  createdBy       User        @relation(fields: [createdByUserId], references: [login])
+  createdByUserId String
+}
+
+enum EntityTypes {
+  SUB
+  USER
 }
 
 enum MonetaryRewardType {

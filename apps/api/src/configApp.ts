@@ -18,13 +18,7 @@ const mainRouter = express.Router()
 
 app.use(express.json())
 app.use(cookieParser())
-// mainRouter.use("/api")
-// app.use(authMiddleware)
-
-app.use("/api", authMiddleware, authRouter, subRouter, reportRouter)
-// app.use("/sec", adminMiddleware)
-// app.use(userRouter)
-// app.use(subRouter)
+app.use("/api", authMiddleware, authRouter, subRouter, userRouter, reportRouter)
 
 app.use(express.static("dist/ui"))
 

@@ -1,0 +1,7 @@
+.diffTag {
+  max-width: calc(50% - 15px);
+}
+
+.diffTag:only-child {
+  max-width: 100%;
+}

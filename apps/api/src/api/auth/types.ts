@@ -4,7 +4,9 @@ export type GetMeResponseBody = Prisma.UserGetPayload<{
   select: {
     login: true,
     role: true,
-    id: true,
+    customMonetaryRewardAmount: true,
+    createdAt: true,
+    totalPayableReward: true,
     sub: true
   }
 }>

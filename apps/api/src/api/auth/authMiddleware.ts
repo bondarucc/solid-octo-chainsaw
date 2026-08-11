@@ -3,12 +3,26 @@ import jwt, { JwtPayload } from "jsonwebtoken"
 import "dotenv/config"
 import { UnauthorizedError } from "../../errorDict.js"
 import { prisma } from "../../initDB.js"
+import { Prisma } from "../../../generated/prisma/client.js"
 
 
 const secret = process.env["JWT_SECRET"]
 if (!secret) throw "no jwt secret set up"
 
+const locals = {
+  select: {
+    login: true,
+    role: true,
+    customMonetaryRewardAmount: true,
+    createdAt: true,
+    totalPayableReward: true,
+    sub: true
+  }
+} as const
 
+export type Locals = {
+  userData: Prisma.UserGetPayload<typeof locals>
+}
 
 export const authMiddleware: Handler = async (req, res, next) => {
   
@@ -25,15 +39,9 @@ export const authMiddleware: Handler = async (req, res, next) => {
     
     const userData = await prisma.user.findFirstOrThrow({
       where: {
-        id: userId
+        login: userId
       },
-      select: {
-        login: true,
-        role: true,
-        id: true,
-        sub: true
-      },
-
+      ...locals
     })
     
     res.locals.userData = userData    

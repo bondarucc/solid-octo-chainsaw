@@ -7,6 +7,10 @@
     "module": "ESNext",
     "types": ["vite/client"],
     "skipLibCheck": true,
+    "paths": {
+      "@types": ["../api/src/browserTypes"],
+      "@labels": ["./src/LABELS"]
+    },
 
     /* Bundler mode */
     "moduleResolution": "bundler",

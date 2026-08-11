@@ -1,9 +1,8 @@
-import type { CreateUserRequestBody, CreateUserResponseBody, GetUsersListResponseBody } from "../../../api/src/api/user/types.ts"
-import type { CreateSubRequestBody, CreateSubResponseBody, GetAssignableSubsResponseBody, GetSingleSubResponseBody, GetSubAuditEventsResponseBody, GetSubsListResponseBody, SubUpdateRequestBody, SubUpdateResponseBody } from "../../../api/src/api/sub/types.ts"
-import type { Filters } from "../components/SubsTable/FilteringPanel.tsx"
+import type { CreateRepaymentResponseBody, CreateSubRequestBody, CreateSubResponseBody, CreateUserRequestBody, CreateUserResponseBody, ExtendSubRequestBody, FilterSubsList, GenerateReportResponseBody, GetActivityJournalQuery, GetActivityJournalResponseBody, GetAuditEventsRequestQuery, GetAuditEventsResponseBody, GetMySubsResponseBody, ListSubsResponseBody, ListUsersQueryShape, ListUsersResponseBody, SubPromotionRequestBody, SubPromotionResponseBody, UpdateSubRequestBody, UpdateSubResponseBody, UpdateUserRequestBody } from "@types"
+import type { User } from "../../../api/generated/prisma/index"
 import type { GetMeResponseBody } from "../../../api/src/api/auth/types.ts"
 import type { ReplaceDatesWithStrings } from "../helpers/types.ts"
-import type { User } from "../../../api/generated/prisma/index"
+
 
 
 async function fetchWrapper(url: string, options?: Parameters<typeof fetch>[1]) {
@@ -19,7 +18,7 @@ export async function login({ login, pwd }: { login: string, pwd: string }) {
   )
 }
 
-export async function getMe(): Promise<GetMeResponseBody | {error: string}> {
+export async function getMe(): Promise<GetMeResponseBody> {
   return await fetchWrapper(
     "/auth/me"
   )
@@ -29,25 +28,16 @@ export async function logout() {
   await fetchWrapper("/auth/logout", { method: "POST" })
 }
 
-export async function getPartnersList(): Promise<GetUsersListResponseBody> {
-  const response: GetUsersListResponseBody = await fetchWrapper("/users")
-
-  return response
-
-
-
+export async function getUsersList(filter: ListUsersQueryShape | string = ""): Promise<ListUsersResponseBody> {
+  const query = typeof filter === "object" 
+    ? `?${new URLSearchParams(Object.entries(filter).filter(([_, v]) => !!v)).toString()}`
+    : filter
+  return fetchWrapper(`/users${query}`)
 }
 
-export async function getFullSubsList(filter: Filters): Promise<GetSubsListResponseBody> {
-  const query = new URLSearchParams(Object.entries(filter).filter(pair => pair[1] !== undefined && pair[1] !== ""))
+export async function getSubsList(filter: FilterSubsList): Promise<ListSubsResponseBody> {
+  const query = new URLSearchParams(Object.entries(filter).filter(([_, v]) => !!v))
   return fetchWrapper("/subs/full?" + query.toString())
-}
-
-export async function getAssignableSubs(): Promise<GetAssignableSubsResponseBody> {
-  const response: GetAssignableSubsResponseBody
-    = await fetchWrapper("/subs/assignable")
-
-  return response
 }
 
 export async function createUser(body: CreateUserRequestBody): Promise<CreateUserResponseBody> {
@@ -65,49 +55,61 @@ export async function createSub(body: CreateSubRequestBody): Promise<CreateSubRe
   return response
 }
 
-export async function getSubAuditEvents(id: string): Promise<GetSubAuditEventsResponseBody> {
-  const response: GetSubAuditEventsResponseBody
-    = await fetchWrapper(`/subs/${id}/audit`)
-
-  return response
+export async function getAuditEvents({by, id}: GetAuditEventsRequestQuery): Promise<GetAuditEventsResponseBody> {
+  return fetchWrapper(`/report/audit?by=${by}&id=${id}`)
 }
 
-export async function getMySubs() {
+export async function getMySubs(): Promise<GetMySubsResponseBody> {
   return fetchWrapper(`/subs/mySubs`)
 }
 
-export async function extendSubPkgBy1Year(id: string) {
-  return fetchWrapper(`/subs/${id}/extend`)
+export async function extendSubPkgBy1Year(externalId: string, paymentDetails: ExtendSubRequestBody["paymentDetails"]) {
+  return fetchWrapper(`/subs/${externalId}/extend`, { method: "POST", body: JSON.stringify({paymentDetails}), headers: [["Content-Type", "application/json"]] })
 }
 
-export async function doRepayment(id: string, amount: number) {
-  await fetchWrapper(`/subs/${id}/repayment`, { method: "POST", body: JSON.stringify({ repaymentAmount: amount }), headers: [["Content-Type", "application/json"]] })
-
+export async function doRepayment(login: string, amount: number): Promise<CreateRepaymentResponseBody | {error: string}> {
+    return await fetchWrapper(`/users/${login}/repayment`, { method: "POST", body: JSON.stringify({ amount }), headers: [["Content-Type", "application/json"]] })
 }
 
-export async function getSubDetails(id: string): Promise<ReplaceDatesWithStrings<GetSingleSubResponseBody>> {
-  return fetchWrapper(`/subs/${id}`)
+// export async function getSubDetails(id: string): Promise<ReplaceDatesWithStrings<GetSingleSubResponseBody>> {
+//   return fetchWrapper(`/subs/${id}`)
 
-}
+// }
 
-export async function doUpdateSubDetails(id: string, data: SubUpdateRequestBody): Promise<SubUpdateResponseBody> {
+export async function doUpdateSub(externalId: string, data: UpdateSubRequestBody): Promise<UpdateSubResponseBody | {error: string}> {
   return fetchWrapper(
-    `/subs/${id}`,
+    `/subs/${externalId}`,
     { 
-      method: "POST",
+      method: "PUT",
       body: JSON.stringify(data),
       headers: [["Content-Type", "application/json"]] 
     }
   )
 }
 
-export async function doAssignUser(subExternalId: string, data: Pick<User, "login" | "pwd" | "role">) {
+export async function generateReport(input: {from: string, to: string}): Promise<GenerateReportResponseBody> {
+  const query = new URLSearchParams(input)
+  const result = await fetchWrapper(`/report/generate?${query.toString()}`)
+  if ("error" in result) throw result.error
+  return result
+}
+
+export async function promoteSub(subExternalId: string, data: SubPromotionRequestBody): Promise<SubPromotionResponseBody> {
   return fetchWrapper(
-    `/subs/${subExternalId}/userAssign`,
+    `/subs/${subExternalId}/promote`,
     { 
       method: "POST",
       body: JSON.stringify(data),
       headers: [["Content-Type", "application/json"]] 
-    }
-  )
+    })
+}
+
+export async function getActivityJournal(query: string):Promise<GetActivityJournalResponseBody> {
+  // const query = new URLSearchParams({from: from.toISOString(), to: to.toISOString()})
+
+  return fetchWrapper(`/report/journal${query}`)
+}
+
+export async function doUpdateUser(login: User["login"], data: UpdateUserRequestBody): Promise<User | {error: string}> {
+  return fetchWrapper(`/users/${login}`, { method: "PUT", body: JSON.stringify(data), headers: [["Content-Type", "application/json"]] })
 }

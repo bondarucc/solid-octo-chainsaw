@@ -3,12 +3,16 @@ import type { GetMeResponseBody } from "../../../api/src/api/auth/types";
 import type { getMe } from "../api/api";
 
 export default function useUserData() {
-  const loaderData = useRouteLoaderData<Awaited<ReturnType<typeof getMe>>>("root")
+  const loaderData = useRouteLoaderData<Awaited<ReturnType<typeof getMe>>>("auth")
 
-  return {
-    error: loaderData && "error" in loaderData ? loaderData.error : undefined,
-    userData: !loaderData || "error" in loaderData ? undefined : loaderData
-  }
+  if (!loaderData) throw "auth required"
+
+  return loaderData
+
+  // return {
+  //   error: loaderData && "error" in loaderData ? loaderData.error : undefined,
+  //   userData: !loaderData || "error" in loaderData ? undefined : loaderData
+  // }
 
 
 }

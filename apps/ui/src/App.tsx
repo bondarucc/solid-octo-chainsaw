@@ -1,119 +1,154 @@
 // import './App.css'
 
-import { ReloadOutlined } from "@ant-design/icons"
-import { Button } from "antd"
+import { DesktopOutlined, FileTextOutlined, ReloadOutlined, UnorderedListOutlined, UserOutlined } from "@ant-design/icons"
+import { Button, ConfigProvider, Layout, Menu, type GetProp, type MenuProps } from "antd"
 import { useEffect, type PropsWithChildren } from "react"
-import { createBrowserRouter, Link, Navigate, Outlet, redirect, useNavigate, useRouteError } from "react-router"
+import { createBrowserRouter, Link, Outlet, redirect, useLocation, useNavigate, useRouteError } from "react-router"
 import { RouterProvider } from "react-router/dom"
-import { getMe, login } from "./api/api"
-import LoginPage from "./components/AuthProvider/LoginPage"
-import DashboardRouter from "./components/Dashboard/DashboardRouter"
-import { InactivityGuard } from "./components/InactivityGuard"
-import TopBar from "./components/TopBar/TopBar"
-import Stats from "./components/Stats/Stats"
+import locale from 'antd/locale/ru_RU'
+
+import { getMe, logout } from "./api/api"
+import { auditLoader, AuditModalContent } from "./components/AuditModalContent"
+import LoginPage, { loginAction } from "./components/LoginPage/LoginPage"
+import PartnersPage, { usersAction, usersLoader } from "./components/PartnersPage/PartnersPage"
+import StatsPage, { statsLoader } from "./components/StatsPage/StatsPage"
+import CreateSubModalContent, { createSubAction } from "./components/SubsPage/NewSubPage/CreateSubModalContent"
+import { subsLoader, SubsPage } from "./components/SubsPage/SubsPage"
 import useUserData from "./hooks/useUserData"
-import AdminDashboard from "./components/Dashboard/AdminDashboard"
-import PartnerDashboard from "./components/Dashboard/PartnerDashboard"
+import MainPage, { mySubsLoader } from "./components/PartnerPortal/MainPage"
+import type { MenuItemType } from "antd/es/menu/interface"
+import { activityJournalLoader, ActivityJournalPage } from "./components/ActivityJournalPage/ActivityJournalPage"
+import { AdminPortalLayout } from "./components/AdminPortalLayout"
+import { editPartnerAction, EditPartnerModalContent } from "./components/PartnersPage/EditPartnerModalContent"
+import { editSubAction, EditSubModalContent } from "./components/SubsPage/EditSubModalContent"
 
 
 
 const router = createBrowserRouter([
   {
-    path: "*",
-    element: <Navigate to="/login" replace />
+    path: "logout",
+    loader: async () => {
+      await logout()
+      throw redirect("/login")
+    }
   },
   {
-    hydrateFallbackElement: "Loading...",
-    // middleware: [
-    //   async ({request}) => {
-    //     request.
-    //   }
-    // ]
-    id: "root",
+    loader: async ({ request: { url } }) => {
+      const userData = await getMe()
+      if ("error" in userData && !url.endsWith("login")) throw redirect("/login")
+
+      if (!("error" in userData) && url.endsWith("login")) {
+        throw redirect(userData.role === "PARTNER" ? "partner" : "partners")
+      }
+      return userData
+    },
+    id: "auth",
     errorElement: <ErrorBoundary />,
-    // shouldRevalidate: () => false,
-    loader: async () => {
-      return await getMe()
+    shouldRevalidate: ({ formAction, actionResult }) => {
+      if (formAction?.includes("login") && typeof actionResult !== "string") return true
+
+      return false
     },
     element: <Outlet />,
     children: [
       {
-        path: "login",
-        element: <LoginPage />,
-
-        action: async ({ request }) => {
-          const formData = await request.formData()
-
-          const username = formData.get("login") as string
-          const pwd = formData.get("pwd") as string
-          const result = await login({ login: username, pwd })
-          if (result.error) return "Wrong login or password"
-        }
-      },
-      {
         element: (
-          <AuthProtectedRoute>
-            <InactivityGuard />
-            <TopBar />
-            <div style={{ paddingInline: "12px", paddingTop: "12px", width: "100%", boxSizing: "border-box", overflow: "hidden" }}>
-              <Outlet />
-            </div>
-          </AuthProtectedRoute>
+          <AdminRoleGuard>
+            <AdminPortalLayout />
+          </AdminRoleGuard>
         ),
         children: [
           {
-            path: "admin",
-            element: <AdminRoleGuard><Outlet /></AdminRoleGuard>,
+            path: "partners",
+            element: <PartnersPage />,
+            id: "partners",
+            loader: usersLoader,
+            action: usersAction,
             children: [
               {
-                path: "dashboard",
-                element: <AdminDashboard />
+                path: ":objectId/audit",
+                element: <AuditModalContent />,
+                loader: auditLoader,
               },
               {
-                path: "stats",
-                element: <Stats />
+                path: ":login/edit",
+                element: <EditPartnerModalContent />,
+                action: editPartnerAction,
+              },
+            ]
+          },
+          {
+            path: "subs",
+            element: <SubsPage />,
+            loader: subsLoader,
+            id: "subs",
+            children: [
+              {
+                path: "new",
+                element: <CreateSubModalContent />,
+                action: createSubAction
+              },
+              {
+                path: ":externalId/edit",
+                element: <EditSubModalContent />,
+                action: editSubAction
+              },
+              {
+                path: ":objectId/audit",
+                element: <AuditModalContent />,
+                loader: auditLoader,
+
               }
             ]
           },
           {
-            path: "partner/dashboard",
-            element: <PartnerDashboard />
+            path: "stats",
+            loader: statsLoader,
+            id: "stats",
+            element: <StatsPage />,
+          },
+          {
+            path: "activityJournal",
+            element: <ActivityJournalPage />,
+            loader: activityJournalLoader
           }
         ]
       },
+      {
+        path: "partner",
+        element: <MainPage />,
+        loader: mySubsLoader
+      },
+      {
+        path: "login",
+        element: <LoginPage />,
+        action: loginAction
+      },
     ]
-  },
 
+  }
 ])
 
-function AuthProtectedRoute({ children }: PropsWithChildren) {
-  const { userData, error } = useUserData()
+function AdminRoleGuard({ children }: PropsWithChildren) {
+  const { role } = useUserData()
   const navigate = useNavigate()
 
   useEffect(() => {
-    if (!userData || error) navigate("/login")
-  }, [userData, navigate])
+    if (role !== "ADMIN") navigate("/partner")
+  }, [role])
 
-
-  return children
-}
-
-function AdminRoleGuard({ children }: PropsWithChildren) {
-  const { userData, error } = useUserData()
-  const navigate = useNavigate()
-
-  if (error || !userData || userData.role !== "ADMIN") navigate("/login")
-
+  if (role !== "ADMIN") return
   return children
 }
 
 
 function App() {
 
-  return <>
-
-    <RouterProvider router={router} />
-  </>
+  return (
+    <ConfigProvider locale={locale}>
+      <RouterProvider router={router} />
+    </ConfigProvider>
+  )
 
 }
 

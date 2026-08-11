@@ -2,6 +2,7 @@ import { Button, notification } from "antd"
 import { useEffect } from "react"
 import { useNavigate } from "react-router"
 import { logout } from "../api/api"
+import LABELS from "@labels"
 
 const INACTIVITY_LIMIT = 15 * 60 * 1000
 const WARNING_LIMIT = INACTIVITY_LIMIT - (30 * 1000)
@@ -22,11 +23,9 @@ export function InactivityGuard() {
       if (Date.now() - lastActivity > WARNING_LIMIT && !notificationSwitch) {
         notificationSwitch = true
 
-        // clearInterval(interval)
         const prevLastActivity = lastActivity
         api.warning({
           showProgress: true,
-          // title: 'Notification Title',
           pauseOnHover: false,
           duration: 25,
           onClose: async () => {
@@ -39,13 +38,13 @@ export function InactivityGuard() {
           actions: (
             <>
               <Button>
-                Продолжить работу
+                {LABELS.inactivityGuard.continue}
               </Button>
             </>
           ),
 
           description: (
-            <span>Автоматический выход из личного кабинета ввиду отсутствия активности</span>
+            <span>{LABELS.inactivityGuard.warning}</span>
           )
         })
       }

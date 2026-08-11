@@ -1,109 +1,30 @@
-import express, { RequestHandler, type Request } from "express"
+import express from "express"
 import { adminMiddleware } from "../auth/adminWiddleware.js"
-import { type Report } from "./types.js"
-import { prisma } from "../../initDB.js"
-import dayjs from "dayjs"
-
+import generateReportHandler from "./getReport.js"
+import { getAudit } from "./getAudit_toBeDeleted.js"
+import { getActivityJournal } from "./getActivityJournal.js"
 
 const router = express.Router()
 const innerRouter = express.Router()
 
 const PATH = "/report"
 
+
 router.use(PATH, adminMiddleware, innerRouter)
-
-type RH = RequestHandler<null, Report["Create"]["Response"], null, Report["Create"]["Request"]["Query"], Locals>
-type Locals = {
-  dateFrom: Date
-  dateTo: Date,
-  report: Partial<Report["Create"]["Response"]>
-}
-
-const validateInputPopulateLocals: RH = async function (req, res, next) {
-  const { from, to } = req.query
-  if (!from || !to) throw "invalid report input"
-
-  const [dateFrom, dateTo] = [new Date(from), dayjs(to).endOf("d").toDate()]
-
-  res.locals = { dateFrom, dateTo, report: {} }
-
-  next()
-
-}
-
-const calculateFreeExtensions: RH = async (_, res, next) => {
-  const { dateFrom, dateTo, report } = res.locals
-  const freeExtensions = await prisma.sPE_AE.count({
-    where: {
-      sc_ae: {
-        isNot: null
-      },
-      timestamp: {
-        lte: dateTo,
-        gte: dateFrom
-      }
-    }
-  })
-  report.freeExtensions = freeExtensions
-  next()
-}
-
-const calculatePaidExtensions: RH = async (_, res, next) => {
-  const { dateFrom, dateTo, report } = res.locals
-
-  const paidExtensions = await prisma.sPE_AE.count({
-    where: {
-      sc_ae_id: null,
-      timestamp: {
-        lte: dateTo,
-        gte: dateFrom
-      }
-    }
-  })
-
-  report.paidExtensions = paidExtensions
-
-  next()
-
-}
-
-const calculateNewSubs: RH = async (_, res, next) => {
-  const { dateFrom, dateTo, report } = res.locals
-
-  const newSubs = await prisma.sC_AE.count({
-    where: {
-      timestamp: {
-        lte: dateTo,
-        gte: dateFrom
-      }
-    }
-  })
-
-  report.newSubs = newSubs
-
-  next()
-
-}
-
-const calculateTotalExpenses: RH = async (_, res, next) => {
-  const { dateFrom, dateTo, report } = res.locals
-  
-
-}
 
 innerRouter.get(
   "/generate",
-  validateInputPopulateLocals,
-  calculateFreeExtensions,
-  calculatePaidExtensions,
-  calculateNewSubs,
-  function finalizeReport(_, res) {
+  ...generateReportHandler
+)
 
-    const { report } = res.locals
+innerRouter.get(
+  "/audit",
+  getAudit
+)
 
-    res.json(report as Report["Create"]["Response"])
-
-  }
+innerRouter.get(
+  "/journal",
+  getActivityJournal
 )
 
 export { router as reportRouter }
