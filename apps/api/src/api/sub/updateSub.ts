@@ -1,6 +1,6 @@
-import { RequestHandler } from "express"
-import { Sub } from "../../../generated/prisma/index.js"
-import { Locals } from "../auth/authMiddleware.js"
+import type { RequestHandler } from "express"
+import type { Sub } from "../../../generated/prisma/index.js"
+import type { Locals } from "../auth/authMiddleware.js"
 import { prisma } from "../../initDB.js"
 
 const MODIFIABLE_KEYS = Array.from(new Set(["endDate", "epg", "login", "m3uPlaylist", "media", "note", "publicKey", "pwd", ] as const satisfies Array<keyof Sub>))

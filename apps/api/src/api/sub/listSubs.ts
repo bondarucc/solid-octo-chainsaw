@@ -1,5 +1,5 @@
-import { RequestHandler, Response, Request } from "express";
-import { Prisma, Sub, User } from "../../../generated/prisma/client.js";
+import type { RequestHandler, Response, Request } from "express";
+import { Prisma, type Sub, type User } from "../../../generated/prisma/client.js";
 import { prisma } from "../../initDB.js";
 
 export type ListSubsResponseBody = Array<Prisma.SubGetPayload<{select: typeof dataToBeReturned}>>

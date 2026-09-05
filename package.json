@@ -5,6 +5,7 @@
     "apps/ui"
   ],
   "scripts": {
-    "ggg": "ui"
+    "build": "git pull && npm install && npm run build -w=api",
+    "deploy_ui": "npm run build -w=ui"
   }
 }

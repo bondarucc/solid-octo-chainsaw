@@ -1,10 +1,10 @@
-import { RequestHandler, Request, Response } from "express"
-import { Payment, Prisma, Sub, User } from "../../../generated/prisma/index.js"
-import { ReplaceDatesWithStrings } from "./types.js"
+import type { RequestHandler, Request, Response } from "express"
+import { type Payment, Prisma, type Sub, type User } from "../../../generated/prisma/index.js"
+import type { ReplaceDatesWithStrings } from "./types.js"
 import dayjs from "dayjs"
-import { PrismaTrnClient } from "../types.js"
+import type { PrismaTrnClient } from "../types.js"
 import { prisma } from "../../initDB.js"
-import { Locals } from "../auth/authMiddleware.js"
+import type { Locals } from "../auth/authMiddleware.js"
 
 const NEW_SUB_REWARD_AMOUNT = 50
 export type RewardType = "PACKAGE_EXTENSION" | "MONETARY"

@@ -1,7 +1,6 @@
 import express from "express"
 import { adminMiddleware } from "../auth/adminWiddleware.js"
 import generateReportHandler from "./getReport.js"
-import { getAudit } from "./getAudit_toBeDeleted.js"
 import { getActivityJournal } from "./getActivityJournal.js"
 
 const router = express.Router()
@@ -17,10 +16,10 @@ innerRouter.get(
   ...generateReportHandler
 )
 
-innerRouter.get(
-  "/audit",
-  getAudit
-)
+// innerRouter.get(
+//   "/audit",
+//   getAudit
+// )
 
 innerRouter.get(
   "/journal",

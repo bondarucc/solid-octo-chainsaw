@@ -2,9 +2,9 @@ import dayjs from "dayjs";
 import type { RequestHandler } from "express";
 import type { Payment, Prisma, Sub, User } from "../../../generated/prisma/index.js";
 import { prisma } from "../../initDB.js";
-import { PrismaTrnClient } from "../types.js";
-import { ReplaceDatesWithStrings } from "./types.js";
-import { Locals } from "../auth/authMiddleware.js";
+import type { PrismaTrnClient } from "../types.js";
+import type { ReplaceDatesWithStrings } from "./types.js";
+import type { Locals } from "../auth/authMiddleware.js";
 
 const MAX_TIER = 25
 

@@ -1,8 +1,8 @@
-import { RequestHandler } from "express";
-import { Prisma, User } from "../../../generated/prisma/index.js";
+import type { RequestHandler } from "express";
+import { Prisma, type User } from "../../../generated/prisma/index.js";
 import { prisma } from "../../initDB.js";
 import { hashSync } from "bcrypt";
-import { Locals } from "../auth/authMiddleware.js";
+import type { Locals } from "../auth/authMiddleware.js";
 
 const MODIFIABLE_KEYS = Array.from(new Set(["pwd", "customMonetaryRewardAmount", "role", "note"] as const satisfies Array<keyof User>))
 const TRACKABLE_KEYS = Array.from(new Set(["customMonetaryRewardAmount", "role", "note"] as const satisfies Array<keyof User>))

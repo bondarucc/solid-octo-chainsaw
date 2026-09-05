@@ -1,8 +1,8 @@
-import { RequestHandler } from "express"
-import { Sub, User } from "../../../generated/prisma/index.js"
-import { createUser, CreateUserRequestBody } from "../user/createUser.js"
+import type { RequestHandler } from "express"
+import type { Sub, User } from "../../../generated/prisma/index.js"
+import { createUser, type CreateUserRequestBody } from "../user/createUser.js"
 import { prisma } from "../../initDB.js"
-import { Locals } from "../auth/authMiddleware.js"
+import type { Locals } from "../auth/authMiddleware.js"
 
 export type SubPromotionRequestBody = {
   type: "existingUser",

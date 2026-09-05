@@ -1,4 +1,4 @@
-import type { CreateRepaymentResponseBody, CreateSubRequestBody, CreateSubResponseBody, CreateUserRequestBody, CreateUserResponseBody, ExtendSubRequestBody, FilterSubsList, GenerateReportResponseBody, GetActivityJournalQuery, GetActivityJournalResponseBody, GetAuditEventsRequestQuery, GetAuditEventsResponseBody, GetMySubsResponseBody, ListSubsResponseBody, ListUsersQueryShape, ListUsersResponseBody, SubPromotionRequestBody, SubPromotionResponseBody, UpdateSubRequestBody, UpdateSubResponseBody, UpdateUserRequestBody } from "@types"
+import type { CreateRepaymentResponseBody, CreateSubRequestBody, CreateSubResponseBody, CreateUserRequestBody, CreateUserResponseBody, ExtendSubRequestBody, FilterSubsList, GenerateReportResponseBody, GetActivityJournalQuery, GetActivityJournalResponseBody, GetMySubsResponseBody, ListSubsResponseBody, ListUsersQueryShape, ListUsersResponseBody, SubPromotionRequestBody, SubPromotionResponseBody, UpdateSubRequestBody, UpdateSubResponseBody, UpdateUserRequestBody } from "@types"
 import type { User } from "../../../api/generated/prisma/index"
 import type { GetMeResponseBody } from "../../../api/src/api/auth/types.ts"
 import type { ReplaceDatesWithStrings } from "../helpers/types.ts"
@@ -53,10 +53,6 @@ export async function createSub(body: CreateSubRequestBody): Promise<CreateSubRe
     = await fetchWrapper("/subs", { method: "POST", body: JSON.stringify(body), headers: [["Content-Type", "application/json"]] })
 
   return response
-}
-
-export async function getAuditEvents({by, id}: GetAuditEventsRequestQuery): Promise<GetAuditEventsResponseBody> {
-  return fetchWrapper(`/report/audit?by=${by}&id=${id}`)
 }
 
 export async function getMySubs(): Promise<GetMySubsResponseBody> {

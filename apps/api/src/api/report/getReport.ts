@@ -1,4 +1,4 @@
-import { RequestHandler } from "express"
+import type { RequestHandler } from "express"
 import { prisma } from "../../initDB.js"
 import dayjs from "dayjs"
 import customParseFormat from "dayjs/plugin/customParseFormat.js"

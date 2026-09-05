@@ -1,4 +1,4 @@
-import { RequestHandler, Response } from "express";
+import type { RequestHandler, Response } from "express";
 import { Prisma } from "../../../generated/prisma/client.js";
 import { prisma } from "../../initDB.js";
 

@@ -1,9 +1,9 @@
-import { RequestHandler, Response } from "express";
+import type { RequestHandler, Response } from "express";
 import { Prisma } from "../../../generated/prisma/client.js";
 import { prisma } from "../../initDB.js";
 import { hashSync } from "bcrypt";
-import { PrismaTrnClient } from "../types.js";
-import { Locals } from "../auth/authMiddleware.js";
+import type { PrismaTrnClient } from "../types.js";
+import type { Locals } from "../auth/authMiddleware.js";
 
 export type CreateUserResponseBody = Prisma.UserGetPayload<{select: typeof dataToBeReturned}>
 

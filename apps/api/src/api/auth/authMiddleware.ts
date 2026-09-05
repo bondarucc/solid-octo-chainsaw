@@ -1,5 +1,5 @@
-import { Handler } from "express"
-import jwt, { JwtPayload } from "jsonwebtoken"
+import type { Handler } from "express"
+import jwt, { type JwtPayload } from "jsonwebtoken"
 import "dotenv/config"
 import { UnauthorizedError } from "../../errorDict.js"
 import { prisma } from "../../initDB.js"

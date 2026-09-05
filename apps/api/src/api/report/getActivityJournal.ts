@@ -1,6 +1,6 @@
-import { RequestHandler } from "express";
+import type { RequestHandler } from "express";
 import { prisma } from "../../initDB.js";
-import { Prisma, Sub, User } from "../../../generated/prisma/index.js";
+import { Prisma, type Sub, type User } from "../../../generated/prisma/index.js";
 import { sortAuditEventsByTimestamp } from "./helpers.js";
 import dayjs from "dayjs";
 

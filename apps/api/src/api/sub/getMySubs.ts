@@ -1,5 +1,5 @@
-import { RequestHandler } from "express"
-import { Prisma, User } from "../../../generated/prisma/client.js"
+import type { RequestHandler } from "express"
+import { Prisma, type User } from "../../../generated/prisma/client.js"
 import { prisma } from "../../initDB.js"
 import { calculateRewardAmount } from "./extendSubPackage.js"
 
