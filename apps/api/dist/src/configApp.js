@@ -1,0 +1,40 @@
+import express from "express";
+import cookieParser from "cookie-parser";
+import { authRouter } from "./api/auth/api.js";
+import { authMiddleware } from "./api/auth/authMiddleware.js";
+import { InternalError } from "./errorDict.js";
+import { app } from "./initApp.js";
+import { userRouter } from "./api/user/api.js";
+import { subRouter } from "./api/sub/api.js";
+import { reportRouter } from "./api/report/api.js";
+export { app };
+const mainRouter = express.Router();
+app.use(express.json());
+app.use(cookieParser());
+app.use("/api", authMiddleware, authRouter, subRouter, userRouter, reportRouter);
+app.use(express.static("dist/ui"));
+app.use((req, res) => {
+    res.sendFile("dist/ui/index.html", { root: process.cwd() });
+});
+//error handlers
+app.use(function errorLogger(err, _, res, next) {
+    console.log(`${new Date().toISOString()}: Err --> ${err.toString?.() || err}`);
+    if (err instanceof InternalError) {
+        console.log(err.stack);
+    }
+    next(err);
+});
+app.use(function internalErrorHandler(err, _, res, next) {
+    if (err instanceof InternalError) {
+        return res.status(401).json({
+            error: err.code
+        });
+    }
+    else
+        next(err);
+});
+app.use(function defaultErrorHandler(_, __, res, ___) {
+    res.status(500).json({
+        error: "INTERNAL_SERVER_ERROR"
+    });
+});

@@ -11,9 +11,9 @@ export default defineConfig({
       '@types': path.resolve(import.meta.dirname, '../api/src/browserTypes'),
     },
   },
-  // build: {
-  //   outDir: "../api/dist/ui"
-  // },
+  build: {
+    outDir: "../api/dist/ui"
+  },
   server: {
     proxy: {
       '/api': {

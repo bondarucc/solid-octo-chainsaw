@@ -1,0 +1,193 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model User {
+  login                      String  @id
+  pwd                        String
+  role                       Role
+  subExternalId              String? @unique
+  totalPayableReward         Float   @default(0)
+  // totalAccumulatedReward     Float   @default(0)
+  // totalRepaymentsReceived    Float   @default(0)
+  customMonetaryRewardAmount Float?
+  note                       String? @db.Text
+
+  //relations
+  sub           Sub?                      @relation("relatedSub", fields: [subExternalId], references: [externalId])
+  attractedSubs ReferalDetails[]
+  ur_ae         UserRepaymentAuditEvent[]
+  createdSubs   Sub[]                     @relation("creator")
+  createdUsers  User[]                    @relation("UserOnUser")
+
+  createdAt       DateTime
+  createdBy       User?    @relation("UserOnUser", fields: [createdByUserId], references: [login])
+  createdByUserId String?
+
+  extensionsSubmitted    SubPackageExtendedAuditEvent[] @relation("extendedBy")
+  repaymentsSubmitted    UserRepaymentAuditEvent[]      @relation("repaidBy")
+  modificationsSubmitted EntityUpdatedAuditEvent[]
+}
+
+model Sub {
+  externalId  String  @id
+  login       String?
+  pwd         String?
+  note        String? @db.Text
+  m3uPlaylist String?
+  epg         String?
+  publicKey   String?
+  media       String?
+
+  //package
+  pkgType   PackageType?
+  startDate DateTime
+  endDate   DateTime
+  region    Region?
+
+  //relations
+  user              User?                          @relation("relatedSub")
+  referalDetails    ReferalDetails?
+  payments          Payment[]
+  packageExtensions SubPackageExtendedAuditEvent[]
+
+  createdAt       DateTime
+  createdBy       User     @relation("creator", fields: [createdByUserId], references: [login])
+  createdByUserId String
+}
+
+model ReferalDetails {
+  attractedSubExternalId String @id
+  attractorUserId        String
+  effectiveAttractorTier Int
+
+  //relations
+  attractedSub Sub                             @relation(fields: [attractedSubExternalId], references: [externalId])
+  attractor    User                            @relation(fields: [attractorUserId], references: [login])
+  spe_ae       SubPackageExtendedAuditEvent?
+  urt_ae       UserRewardTriggeredAuditEvent[]
+}
+
+model Payment {
+  id            String   @id @default(uuid())
+  currency      Currency
+  amount        Float
+  date          DateTime
+  subExternalId String
+
+  //relations
+  sub    Sub                           @relation(fields: [subExternalId], references: [externalId])
+  spe_ae SubPackageExtendedAuditEvent?
+
+  createdAt DateTime
+}
+
+model SubPackageExtendedAuditEvent {
+  id                     String                 @id @default(uuid())
+  prevEndDate            DateTime
+  newEndDate             DateTime
+  attractedSubExternalId String?                @unique
+  paymentId              String                 @unique
+  subExternalId          String
+  reason                 PackageExtensionReason
+
+  //relations
+  //attractedSubReferalDetails must be populated in case of NEW_SUB_ATTRACTED type of extension
+  attractedSubReferalDetails ReferalDetails?                @relation(fields: [attractedSubExternalId], references: [attractedSubExternalId])
+  payment                    Payment                        @relation(fields: [paymentId], references: [id])
+  sub                        Sub                            @relation(fields: [subExternalId], references: [externalId])
+  urt_ae                     UserRewardTriggeredAuditEvent?
+
+  createdAt       DateTime
+  createdBy       User     @relation("extendedBy", fields: [createdByUserId], references: [login])
+  createdByUserId String
+}
+
+enum PackageExtensionReason {
+  PAID_EXTENSION
+  NEW_SUB_ATTRACTED
+}
+
+model UserRewardTriggeredAuditEvent {
+  id                                    String             @id @default(uuid())
+  customMonetaryRewardAmount            Float?
+  rewardType                            MonetaryRewardType
+  rewardAmount                          Float
+  prevTotalPayableReward                Float
+  newTotalPayableReward                 Float
+  highestTierReached                    Boolean            @default(false)
+  referalDetails_attractedSubExternalId String
+  spe_ae_id                             String?            @unique
+
+  //relations
+  referalDetails ReferalDetails @relation(fields: [referalDetails_attractedSubExternalId], references: [attractedSubExternalId])
+
+  //must be populated in case of SUB_EXT
+  spe_ae SubPackageExtendedAuditEvent? @relation(fields: [spe_ae_id], references: [id])
+
+  createdAt DateTime
+}
+
+model UserRepaymentAuditEvent {
+  id                     String @id @default(uuid())
+  userId                 String
+  repaymentAmount        Float
+  prevTotalPayableReward Float
+  newTotalPayableReward  Float
+
+  //relations
+  user User @relation(fields: [userId], references: [login])
+
+  createdAt       DateTime
+  createdBy       User     @relation("repaidBy", fields: [createdByUserId], references: [login])
+  createdByUserId String
+}
+
+model EntityUpdatedAuditEvent {
+  id              String      @id @default(uuid())
+  entityType      EntityTypes
+  entityId        String
+  reason          String?
+  diff            String      @db.Text
+  createdAt       DateTime
+  createdBy       User        @relation(fields: [createdByUserId], references: [login])
+  createdByUserId String
+}
+
+enum EntityTypes {
+  SUB
+  USER
+}
+
+enum MonetaryRewardType {
+  SUB_EXT
+  NEW_SUB
+}
+
+enum Currency {
+  USD
+  EUR
+}
+
+enum PackageType {
+  REGULAR
+  PREMIUM
+}
+
+enum Role {
+  ADMIN
+  PARTNER
+}
+
+enum Region {
+  EU
+  USA_CANADA
+}

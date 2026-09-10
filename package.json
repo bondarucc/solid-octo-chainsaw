@@ -5,7 +5,8 @@
     "apps/ui"
   ],
   "scripts": {
-    "build": "git pull && npm install && npm run build -w=api",
-    "deploy_ui": "npm run build -w=ui"
+    "build": "npm run build -w=api && npm run build -w=ui",
+    "updateAndStart": "git pull && npm install && npm run start:prod -w=api",
+    "start": "npm run start:prod -w=api"
   }
 }
