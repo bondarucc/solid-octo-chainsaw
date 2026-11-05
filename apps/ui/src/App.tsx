@@ -21,6 +21,7 @@ import { activityJournalLoader, ActivityJournalPage } from "./components/Activit
 import { AdminPortalLayout } from "./components/AdminPortalLayout"
 import { editPartnerAction, EditPartnerModalContent } from "./components/PartnersPage/EditPartnerModalContent"
 import { editSubAction, EditSubModalContent } from "./components/SubsPage/EditSubModalContent"
+import { FAQPage } from "./components/FAQPage"
 
 
 
@@ -111,6 +112,10 @@ const router = createBrowserRouter([
             path: "activityJournal",
             element: <ActivityJournalPage />,
             loader: activityJournalLoader
+          },
+          {
+            path: "faq",
+            element: <FAQPage />
           }
         ]
       },

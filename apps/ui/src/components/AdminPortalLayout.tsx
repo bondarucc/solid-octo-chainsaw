@@ -1,8 +1,10 @@
-import { DesktopOutlined, FileTextOutlined, LogoutOutlined, UnorderedListOutlined, UserOutlined } from "@ant-design/icons"
+import { DesktopOutlined, FileTextOutlined, LogoutOutlined, QuestionCircleOutlined, UnorderedListOutlined, UserOutlined } from "@ant-design/icons"
 import { Button, Flex, Layout, Menu, type GetProp } from "antd"
 import { Link, Outlet, useLocation } from "react-router"
 import useUserData from "../../src/hooks/useUserData"
 import LABELS from "@labels"
+import type { PropsWithChildren } from "react"
+
 
 const { Sider, Content } = Layout
 type MenuItems = GetProp<typeof Menu, "items">
@@ -31,22 +33,43 @@ function AdminPortalLayout() {
             theme="dark"
           />
 
-          <span style={{ paddingInline: 10, maxWidth: "100%", textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap", wordSpacing: 15 }}>
-            <Link to={"/logout"}>
-              <Button
-                shape="circle"
-                icon={<LogoutOutlined />}
-                style={{ marginRight: 10 }}
-              />
-            </Link>
-            {login}
-          </span>
+          <div style={{paddingInline: 4, display: "flex", flexDirection: "column", gap: 10}}>
+            <ItemWrapper
+              to="/faq"
+              title="Справка"
+            >
+              <QuestionCircleOutlined />
+            </ItemWrapper>
+            <ItemWrapper
+              to="/logout"
+              // title={login}
+              title={login}
+            >
+              <LogoutOutlined />
+            </ItemWrapper>
+          </div>
         </Flex>
       </Sider>
       <Content style={{ padding: 10, overflowY: "auto" }}>
         <Outlet />
       </Content>
     </Layout>
+  )
+}
+
+function ItemWrapper({children, title, to}: PropsWithChildren & {title: string, to: string}) {
+  return (
+    <Link to={to}>
+      <Button
+        icon={children}
+        block
+        style={{ justifyContent: "start" }}
+      >
+        <span style={{ textOverflow: "ellipsis", overflow: "hidden"}}>
+          {title}
+        </span>
+      </Button>
+    </Link>
   )
 }
 
